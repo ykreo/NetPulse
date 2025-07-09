@@ -21,43 +21,86 @@ struct SettingsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text("Настройки")
-                .font(.largeTitle).fontWeight(.bold)
-                .padding()
-
+            // Заголовок
+            VStack(spacing: 8) {
+                Text("Настройки")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Настройте параметры мониторинга сети")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 24)
+            .padding(.bottom, 16)
+            
+            Divider()
+                .padding(.horizontal, 32)
+            
+            // Основной контент
             TabView {
                 GeneralSettingsTab(localSettings: $localSettings)
-                    .tabItem { Label("Основные", systemImage: "gear") }
+                    .tabItem {
+                        Label("Основные", systemImage: "gear")
+                    }
                 
-                NetworkSettingsTab(localSettings: $localSettings,
-                                   onTestRouter: testRouterConnection,
-                                   onTestPC: testPcConnection)
-                    .tabItem { Label("Сеть", systemImage: "network") }
-            }
-            .frame(minWidth: 580, minHeight: 450)
-            
-            HStack {
-                Spacer()
-                Button("Отмена", role: .cancel) { dismiss() }
-                Button("Сохранить") {
-                    saveChanges()
-                    dismiss()
+                NetworkSettingsTab(
+                    localSettings: $localSettings,
+                    onTestRouter: testRouterConnection,
+                    onTestPC: testPcConnection
+                )
+                .tabItem {
+                    Label("Сеть", systemImage: "network")
                 }
-                .disabled(!settingsManager.areAllFieldsValid)
-                .keyboardShortcut(.defaultAction)
             }
-            .padding()
-            .background(.bar)
+            .frame(minWidth: 600, minHeight: 480)
+            .padding(.horizontal, 8)
+            
+            // Футер с кнопками
+            VStack(spacing: 0) {
+                Divider()
+                    .padding(.horizontal, 32)
+                
+                HStack(spacing: 12) {
+                    Spacer()
+                    
+                    Button("Отмена", role: .cancel) {
+                        dismiss()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    
+                    Button("Сохранить") {
+                        saveChanges()
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!settingsManager.areAllFieldsValid)
+                    .keyboardShortcut(.defaultAction)
+                }
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
+            }
+            .background(Color(NSColor.windowBackgroundColor))
         }
         .onAppear { self.localSettings = settingsManager.settings }
-        .onChange(of: localSettings) { _, newSettings in settingsManager.applyForValidation(newSettings) }
+        .onChange(of: localSettings) { _, newSettings in
+            settingsManager.applyForValidation(newSettings)
+        }
         .onChange(of: localSettings.hideDockIcon) { _, newHideDockIcon in
             if newHideDockIcon != settingsManager.settings.hideDockIcon {
                 showRestartAlert = true
             }
         }
         .alert(isPresented: $showTestResultAlert) {
-            Alert(title: Text(testResultTitle), message: Text(testResultMessage), dismissButton: .default(Text("OK")))
+            Alert(
+                title: Text(testResultTitle),
+                message: Text(testResultMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
         .alert("Требуется перезапуск", isPresented: $showRestartAlert) {
             Button("Перезапустить") { restartApp() }
@@ -85,7 +128,10 @@ struct SettingsView: View {
     
     private func testRouterConnection() {
         Task {
-            let (success, message) = await networkManager.testSSHConnection(user: localSettings.sshUserRouter, host: localSettings.routerIP)
+            let (success, message) = await networkManager.testSSHConnection(
+                user: localSettings.sshUserRouter,
+                host: localSettings.routerIP
+            )
             testResultTitle = success ? "Успех!" : "Ошибка!"
             testResultMessage = message
             showTestResultAlert = true
@@ -94,7 +140,10 @@ struct SettingsView: View {
     
     private func testPcConnection() {
         Task {
-            let (success, message) = await networkManager.testSSHConnection(user: localSettings.sshUserPC, host: localSettings.pcIP)
+            let (success, message) = await networkManager.testSSHConnection(
+                user: localSettings.sshUserPC,
+                host: localSettings.pcIP
+            )
             testResultTitle = success ? "Успех!" : "Ошибка!"
             testResultMessage = message
             showTestResultAlert = true
@@ -103,7 +152,11 @@ struct SettingsView: View {
     
     private func handleLaunchAtLoginChange(to newValue: Bool) {
         do {
-            if newValue { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+            if newValue {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
             Logger.app.info("Статус автозапуска изменен на \(newValue).")
         } catch {
             Logger.app.error("Ошибка изменения статуса автозапуска: \(error.localizedDescription)")
@@ -125,60 +178,104 @@ struct SettingsView: View {
     }
 }
 
-
 // MARK: - Вкладка "Основные"
+
 private struct GeneralSettingsTab: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Binding var localSettings: AppSettings
     
     var body: some View {
-        Form {
-            Section("Поведение приложения") {
-                Toggle(isOn: $localSettings.launchAtLogin) {
-                    Label("Запускать при входе в систему", systemImage: "macwindow.on.rectangle")
-                }
-                Toggle(isOn: $localSettings.hideDockIcon) {
-                    Label("Скрывать иконку в Dock", systemImage: "dock.rectangle")
+        ScrollView {
+            VStack(spacing: 24) {
+                // Поведение приложения
+                SettingsGroup(title: "Поведение приложения", icon: "macwindow") {
+                    VStack(spacing: 16) {
+                        SettingsRow(
+                            title: "Запускать при входе в систему",
+                            description: "Автоматически запускать NetPulse при входе в macOS"
+                        ) {
+                            Toggle("", isOn: $localSettings.launchAtLogin)
+                                .labelsHidden()
+                        }
+                        
+                        SettingsRow(
+                            title: "Скрывать иконку в Dock",
+                            description: "Показывать приложение только в строке меню"
+                        ) {
+                            Toggle("", isOn: $localSettings.hideDockIcon)
+                                .labelsHidden()
+                        }
+                        
+                        SettingsRow(
+                            title: "Интервал проверки",
+                            description: "Как часто проверять статус устройств в фоновом режиме"
+                        ) {
+                            HStack(spacing: 8) {
+                                Stepper(
+                                    value: $localSettings.backgroundCheckInterval,
+                                    in: 10...3600,
+                                    step: 10
+                                ) {
+                                    EmptyView()
+                                }
+                                .labelsHidden()
+                                
+                                Text("\(Int(localSettings.backgroundCheckInterval)) сек")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                    .frame(minWidth: 60, alignment: .trailing)
+                            }
+                        }
+                    }
                 }
                 
-                LabeledContent {
-                    Stepper(value: $localSettings.backgroundCheckInterval, in: 10...3600, step: 10) {
-                        TextField("", value: $localSettings.backgroundCheckInterval, formatter: NumberFormatter())
-                            .multilineTextAlignment(.trailing)
-                            .frame(minWidth: 50)
+                // Управление конфигурацией
+                SettingsGroup(title: "Конфигурация", icon: "doc.text") {
+                    VStack(spacing: 16) {
+                        SettingsRow(
+                            title: "Импорт и экспорт",
+                            description: "Сохранение и загрузка настроек приложения"
+                        ) {
+                            HStack(spacing: 8) {
+                                Button("Импорт...") {
+                                    settingsManager.importSettings()
+                                    localSettings = settingsManager.settings
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                
+                                Button("Экспорт...") {
+                                    settingsManager.exportSettings()
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
+                        }
+                        
+                        SettingsRow(
+                            title: "Сброс настроек",
+                            description: "Восстановить все настройки по умолчанию"
+                        ) {
+                            Button("Сбросить", role: .destructive) {
+                                settingsManager.restoreDefaults()
+                                localSettings = settingsManager.settings
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
                     }
-                } label: {
-                    Label("Интервал проверки (сек)", systemImage: "timer")
                 }
+                
+                Spacer(minLength: 20)
             }
-            
-            Section {
-                // Кнопки импорта и экспорта теперь внутри LabeledContent
-                LabeledContent {
-                    HStack {
-                        Button("Импорт...") { settingsManager.importSettings() }
-                        Button("Экспорт...") { settingsManager.exportSettings() }
-                    }
-                } label: {
-                    Label("Конфигурация", systemImage: "doc.text.magnifyingglass")
-                }
-            } footer: {
-                // Сброс вынесен отдельно для наглядности
-                HStack {
-                    Spacer()
-                    Button("Сбросить все настройки", role: .destructive) {
-                        settingsManager.restoreDefaults()
-                        localSettings = settingsManager.settings
-                    }
-                }
-                .padding(.top, 8)
-            }
+            .padding(.horizontal, 32)
+            .padding(.vertical, 24)
         }
     }
 }
 
-
 // MARK: - Вкладка "Сеть"
+
 private struct NetworkSettingsTab: View {
     @FocusState private var focusedField: String?
     @EnvironmentObject var settingsManager: SettingsManager
@@ -187,107 +284,252 @@ private struct NetworkSettingsTab: View {
     let onTestPC: () -> Void
     
     var body: some View {
-        Form {
-            Section("Роутер") {
-                ValidationField(title: "IP адрес", text: $localSettings.routerIP, focusedField: $focusedField, isValid: settingsManager.isRouterIPValid, prompt: "Например, 192.168.1.1")
-                ValidationField(title: "Пользователь SSH", text: $localSettings.sshUserRouter, focusedField: $focusedField, isValid: !localSettings.sshUserRouter.isEmpty, prompt: "Обычно 'root' или 'admin'")
-                HStack { Spacer(); Button("Проверить SSH", action: onTestRouter) }
+        ScrollView {
+            VStack(spacing: 24) {
+                // Настройки роутера
+                SettingsGroup(title: "Роутер", icon: "wifi.router") {
+                    VStack(spacing: 16) {
+                        ValidationField(
+                            title: "IP адрес",
+                            text: $localSettings.routerIP,
+                            focusedField: $focusedField,
+                            isValid: settingsManager.isRouterIPValid,
+                            prompt: "192.168.1.1",
+                            description: "IP адрес вашего домашнего роутера"
+                        )
+                        
+                        ValidationField(
+                            title: "Пользователь SSH",
+                            text: $localSettings.sshUserRouter,
+                            focusedField: $focusedField,
+                            isValid: !localSettings.sshUserRouter.isEmpty,
+                            prompt: "root",
+                            description: "Имя пользователя для SSH подключения к роутеру"
+                        )
+                        
+                        SettingsRow(
+                            title: "Тестирование подключения",
+                            description: "Проверить SSH соединение с роутером"
+                        ) {
+                            Button("Проверить SSH", action: onTestRouter)
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                        }
+                    }
+                }
+                
+                // Настройки компьютера
+                SettingsGroup(title: "Компьютер", icon: "desktopcomputer") {
+                    VStack(spacing: 16) {
+                        ValidationField(
+                            title: "IP адрес",
+                            text: $localSettings.pcIP,
+                            focusedField: $focusedField,
+                            isValid: settingsManager.isPcIPValid,
+                            prompt: "192.168.1.100",
+                            description: "IP адрес вашего компьютера в сети"
+                        )
+                        
+                        ValidationField(
+                            title: "MAC адрес",
+                            text: $localSettings.pcMAC,
+                            focusedField: $focusedField,
+                            isValid: settingsManager.isPcMACValid,
+                            prompt: "00:1A:2B:3C:4D:5E",
+                            description: "MAC адрес сетевой карты для Wake-on-LAN"
+                        )
+                        
+                        ValidationField(
+                            title: "Пользователь SSH",
+                            text: $localSettings.sshUserPC,
+                            focusedField: $focusedField,
+                            isValid: !localSettings.sshUserPC.isEmpty,
+                            prompt: "username",
+                            description: "Имя пользователя для SSH подключения к компьютеру"
+                        )
+                        
+                        SettingsRow(
+                            title: "Тестирование подключения",
+                            description: "Проверить SSH соединение с компьютером"
+                        ) {
+                            Button("Проверить SSH", action: onTestPC)
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                        }
+                    }
+                }
+                
+                // Общие настройки
+                SettingsGroup(title: "Общие параметры", icon: "globe") {
+                    VStack(spacing: 16) {
+                        SshKeyPicker(
+                            keyPath: $localSettings.sshKeyPath,
+                            isValid: settingsManager.isSshKeyPathValid
+                        )
+                        
+                        ValidationField(
+                            title: "Хост для проверки интернета",
+                            text: $localSettings.checkHost,
+                            focusedField: $focusedField,
+                            isValid: settingsManager.isCheckHostValid,
+                            prompt: "1.1.1.1",
+                            description: "IP адрес или домен для проверки подключения к интернету"
+                        )
+                    }
+                }
+                
+                Spacer(minLength: 20)
             }
-            
-            Section("Компьютер") {
-                ValidationField(title: "IP адрес", text: $localSettings.pcIP, focusedField: $focusedField, isValid: settingsManager.isPcIPValid, prompt: "Например, 192.168.1.100")
-                ValidationField(title: "MAC адрес", text: $localSettings.pcMAC, focusedField: $focusedField, isValid: settingsManager.isPcMACValid, prompt: "Например, 00:1A:2B:3C:4D:5E", helpText: "Используется для Wake-on-LAN.")
-                ValidationField(title: "Пользователь SSH", text: $localSettings.sshUserPC, focusedField: $focusedField, isValid: !localSettings.sshUserPC.isEmpty, prompt: "Имя вашего пользователя на ПК")
-                HStack { Spacer(); Button("Проверить SSH", action: onTestPC) }
-            }
-            
-            Section("Общие") {
-                SshKeyPicker(keyPath: $localSettings.sshKeyPath, isValid: settingsManager.isSshKeyPathValid, helpText: "Приватный ключ для доступа к устройствам без пароля.")
-                ValidationField(title: "Хост для проверки", text: $localSettings.checkHost, focusedField: $focusedField, isValid: settingsManager.isCheckHostValid, prompt: "Например, 1.1.1.1 или ya.ru", helpText: "Адрес для определения статуса интернета.")
-            }
+            .padding(.horizontal, 32)
+            .padding(.vertical, 24)
         }
-        .padding()
     }
 }
 
 // MARK: - Переиспользуемые компоненты
+
+private struct SettingsGroup<Content: View>: View {
+    let title: String
+    let icon: String
+    let content: Content
+    
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.accentColor)
+                    .frame(width: 20)
+                
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            .padding(.leading, 4)
+            
+            content
+                .padding(.horizontal, 16)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(NSColor.controlBackgroundColor))
+                )
+        }
+    }
+}
+
+private struct SettingsRow<Content: View>: View {
+    let title: String
+    let description: String
+    let content: Content
+    
+    init(title: String, description: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.description = description
+        self.content = content()
+    }
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            content
+                .frame(alignment: .trailing)
+        }
+    }
+}
+
 private struct ValidationField: View {
-    let title: String // Мы будем использовать title как стабильный ID
+    let title: String
     @Binding var text: String
     @FocusState.Binding var focusedField: String?
     let isValid: Bool
     let prompt: String
-    var helpText: String? = nil
-
+    let description: String
+    
     @State private var hasBeenEdited: Bool = false
-
+    
     var body: some View {
-        LabeledContent {
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack {
-                    TextField("", text: $text, prompt: Text(prompt).foregroundColor(.secondary.opacity(0.5)))
-                        // ИСПОЛЬЗУЕМ `title` КАК СТАБИЛЬНЫЙ ИДЕНТИФИКАТОР
-                        .focused($focusedField, equals: title)
-                        .onChange(of: text) { _, _ in hasBeenEdited = true }
-                        // При появлении проверяем, не было ли поле уже отредактировано
-                        .onAppear {
-                            if !text.isEmpty { hasBeenEdited = true }
-                        }
-
-                    // Показываем иконку, если поле было отредактировано или оно не пустое при открытии
-                    if hasBeenEdited {
-                        Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .foregroundColor(isValid ? .green : .red)
-                            .transition(.scale.animation(.spring()))
+        SettingsRow(title: title, description: description) {
+            HStack(spacing: 8) {
+                TextField("", text: $text)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($focusedField, equals: title)
+                    .frame(minWidth: 160)
+                    .onChange(of: text) { _, _ in
+                        hasBeenEdited = true
                     }
-                }
-                if let helpText = helpText {
-                    Text(helpText).font(.caption2).foregroundColor(.secondary)
+                    .onAppear {
+                        if !text.isEmpty {
+                            hasBeenEdited = true
+                        }
+                    }
+                
+                if hasBeenEdited {
+                    Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(isValid ? .green : .red)
+                        .transition(.scale.animation(.spring()))
                 }
             }
-        } label: { Text(title) }
+        }
     }
 }
 
-// ИСПРАВЛЕННАЯ ВЕРСИЯ SshKeyPicker
 private struct SshKeyPicker: View {
     @Binding var keyPath: String
     let isValid: Bool
-    let helpText: String
     
     var body: some View {
-        LabeledContent {
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack {
-                    // Текст с путем к файлу
-                    Text((keyPath as NSString).abbreviatingWithTildeInPath)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .foregroundColor(isValid ? .primary : .secondary)
+        SettingsRow(
+            title: "Путь к SSH ключу",
+            description: "Приватный ключ для авторизации на устройствах без пароля"
+        ) {
+            HStack(spacing: 8) {
+                Text((keyPath as NSString).abbreviatingWithTildeInPath)
+                    .font(.body)
+                    .foregroundColor(isValid ? .primary : .secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(minWidth: 120, alignment: .leading)
+                
+                Button("Выбрать...") {
+                    let panel = NSOpenPanel()
+                    panel.canChooseFiles = true
+                    panel.canChooseDirectories = false
+                    panel.allowsMultipleSelection = false
+                    panel.title = "Выберите SSH ключ"
+                    panel.message = "Выберите файл приватного ключа для SSH подключения"
                     
-                    // Кнопка выбора файла
-                    Button("Выбрать...") {
-                        let panel = NSOpenPanel()
-                        panel.canChooseFiles = true
-                        panel.canChooseDirectories = false
-                        panel.allowsMultipleSelection = false
-                        if panel.runModal() == .OK, let url = panel.urls.first {
-                            keyPath = url.path
-                        }
+                    if panel.runModal() == .OK, let url = panel.urls.first {
+                        keyPath = url.path
                     }
-                    
-                    // Иконка валидации
-                    Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .foregroundColor(isValid ? .green : .red)
                 }
-                // Текст подсказки
-                Text(helpText)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                
+                Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.caption)
+                    .foregroundColor(isValid ? .green : .red)
             }
-        } label: {
-            Text("Путь к SSH ключу")
         }
     }
 }

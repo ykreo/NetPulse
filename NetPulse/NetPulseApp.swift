@@ -1,5 +1,3 @@
-// NetPulse/NetPulseApp.swift
-
 import SwiftUI
 
 @main
@@ -10,15 +8,12 @@ struct NetPulseApp: App {
     @StateObject private var networkManager: NetworkManager
     
     init() {
+        // Создаем единый экземпляр SettingsManager
         let settings = SettingsManager()
         let network = NetworkManager(settingsManager: settings)
         
         _settingsManager = StateObject(wrappedValue: settings)
         _networkManager = StateObject(wrappedValue: network)
-        
-        // Передаем менеджеры в AppDelegate для управления окнами
-        appDelegate.settingsManager = settings
-        appDelegate.networkManager = network
     }
 
     var body: some Scene {
@@ -26,6 +21,11 @@ struct NetPulseApp: App {
             MenuView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
+                .onAppear {
+                    // Передаем менеджеры в AppDelegate после появления UI
+                    appDelegate.settingsManager = settingsManager
+                    appDelegate.networkManager = networkManager
+                }
         } label: {
             // ИСПРАВЛЕНО: Новый, элегантный способ анимации
             Image(systemName: "globe.americas.fill") // Используем одну иконку

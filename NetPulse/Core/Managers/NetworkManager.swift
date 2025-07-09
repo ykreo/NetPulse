@@ -13,25 +13,26 @@ class NetworkManager: ObservableObject {
     private let settingsManager: SettingsManager
     private var updateTask: Task<Void, Error>?
       
-      @Published var routerStatus = DeviceStatus()
-      @Published var pcStatus = DeviceStatus()
-      @Published var internetStatus = DeviceStatus()
-      @Published var isUpdating = false
+    @Published var routerStatus = DeviceStatus()
+    @Published var pcStatus = DeviceStatus()
+    @Published var internetStatus = DeviceStatus()
+    @Published var isUpdating = false
       
-      private var previousRouterStatus: DeviceStatus.State = .unknown
-      private var previousPcStatus: DeviceStatus.State = .unknown
-      private var previousInternetStatus: DeviceStatus.State = .unknown
+    private var previousRouterStatus: DeviceStatus.State = .unknown
+    private var previousPcStatus: DeviceStatus.State = .unknown
+    private var previousInternetStatus: DeviceStatus.State = .unknown
     
     // MARK: - Initializer
 
     init(settingsManager: SettingsManager) {
         self.settingsManager = settingsManager
         Task {
-            await requestNotificationPermission()
+            await self.requestNotificationPermission()
             // Сразу запускаем управляемую задачу
-            setUpdateFrequency(isFast: false)
+            self.setUpdateFrequency(isFast: false)
         }
     }
+    
     // MARK: - Timer Control
        
     func setUpdateFrequency(isFast: Bool) {
@@ -41,12 +42,12 @@ class NetworkManager: ObservableObject {
         // Создаем новую задачу
         updateTask = Task {
             // Устанавливаем начальный интервал
-            var currentInterval = isFast ? 5.0 : settingsManager.settings.backgroundCheckInterval
+            var currentInterval = isFast ? 5.0 : self.settingsManager.settings.backgroundCheckInterval
             let logMessage = isFast ? "Переход на быстрый режим обновления (5 сек)." : "Переход на фоновый режим обновления (\(currentInterval) сек)."
             Logger.app.info("\(logMessage)")
             
             // Сразу выполняем первую проверку
-            await updateAllStatuses(isBackgroundCheck: !isFast)
+            await self.updateAllStatuses(isBackgroundCheck: !isFast)
             
             // Бесконечный цикл, который будет прерван отменой задачи
             while !Task.isCancelled {
@@ -55,14 +56,14 @@ class NetworkManager: ObservableObject {
                 
                 // Проверяем, не изменился ли интервал в настройках
                 // Это делает систему более отзывчивой к изменениям настроек
-                let settingsInterval = settingsManager.settings.backgroundCheckInterval
+                let settingsInterval = self.settingsManager.settings.backgroundCheckInterval
                 if !isFast && currentInterval != settingsInterval {
                     currentInterval = settingsInterval
                     Logger.app.info("Интервал фонового обновления изменен на \(currentInterval) сек.")
                 }
                 
                 // Выполняем проверку
-                await updateAllStatuses(isBackgroundCheck: !isFast)
+                await self.updateAllStatuses(isBackgroundCheck: !isFast)
             }
         }
     }
@@ -74,8 +75,8 @@ class NetworkManager: ObservableObject {
             guard !isUpdating else { return }
 
             // Если все поля невалидны, сбрасываем статусы
-            guard settingsManager.areAllFieldsValid else {
-                (routerStatus, pcStatus, internetStatus) = (.init(), .init(), .init())
+            guard self.settingsManager.areAllFieldsValid else {
+                (self.routerStatus, self.pcStatus, self.internetStatus) = (.init(), .init(), .init())
                 return
             }
             
@@ -87,9 +88,9 @@ class NetworkManager: ObservableObject {
             Logger.app.info("Начинается обновление статусов (фоновое: \(isBackgroundCheck))...")
             
             // Асинхронно пингуем все цели
-            async let directInternetLatency = ping(host: settingsManager.settings.checkHost)
-            async let routerLatency = ping(host: settingsManager.settings.routerIP)
-            async let pcLatency = ping(host: settingsManager.settings.pcIP)
+            async let directInternetLatency = self.ping(host: self.settingsManager.settings.checkHost)
+            async let routerLatency = self.ping(host: self.settingsManager.settings.routerIP)
+            async let pcLatency = self.ping(host: self.settingsManager.settings.pcIP)
 
             let (routerResult, pcResult, directInternetResult) = await (routerLatency, pcLatency, directInternetLatency)
 
@@ -106,7 +107,7 @@ class NetworkManager: ObservableObject {
             if let latency = directInternetResult {
                 newInternetStatus = .init(state: .online, latency: latency)
             } else if self.routerStatus.state == .online {
-                if let latencyViaRouter = await checkInternetViaRouter() {
+                if let latencyViaRouter = await self.checkInternetViaRouter() {
                     newInternetStatus = .init(state: .online, latency: latencyViaRouter)
                 } else {
                     newInternetStatus = .init(state: .offline)
@@ -118,9 +119,9 @@ class NetworkManager: ObservableObject {
 
             // Только для фоновых проверок: сравниваем статусы и отправляем уведомления
             if isBackgroundCheck {
-                checkAndNotify(device: "Роутер", old: previousRouterStatus, new: self.routerStatus.state)
-                checkAndNotify(device: "Компьютер", old: previousPcStatus, new: self.pcStatus.state)
-                checkAndNotify(device: "Интернет", old: previousInternetStatus, new: self.internetStatus.state)
+                self.checkAndNotify(device: "Роутер", old: self.previousRouterStatus, new: self.routerStatus.state)
+                self.checkAndNotify(device: "Компьютер", old: self.previousPcStatus, new: self.pcStatus.state)
+                self.checkAndNotify(device: "Интернет", old: self.previousInternetStatus, new: self.internetStatus.state)
             }
             
             // Обновляем "предыдущие" статусы для следующей проверки
@@ -133,7 +134,7 @@ class NetworkManager: ObservableObject {
     
     // MARK: - Core Network Operations
     
-    // ✨ ИСПРАВЛЕНО: Гарантированное выполнение в фоне, чтобы не замораживать UI
+    // ИСПРАВЛЕНО: Гарантированное выполнение в фоне, чтобы не замораживать UI
     private func runProcess(executableURL: URL, arguments: [String]) async -> (output: String, error: String, exitCode: Int32) {
         return await withCheckedContinuation { continuation in
             // Запускаем всю работу в фоновом потоке
@@ -167,15 +168,11 @@ class NetworkManager: ObservableObject {
         }
     }
 
-    // Остальные функции (ping, ssh, actions) остаются без изменений...
-    // Они уже используют исправленный runProcess.
-    // ... (весь остальной код из вашего NetworkManager.swift)
-
     /// Пингует хост с помощью нативной утилиты `/sbin/ping`.
     private func ping(host: String) async -> Double? {
         guard !host.isEmpty else { return nil }
         
-        let result = await runProcess(
+        let result = await self.runProcess(
             executableURL: URL(fileURLWithPath: "/sbin/ping"),
             arguments: ["-c", "1", "-W", "2000", host] // 1 пакет, таймаут 2000 мс
         )
@@ -195,7 +192,7 @@ class NetworkManager: ObservableObject {
 
     /// Выполняет команду по SSH с помощью нативной утилиты `/usr/bin/ssh`.
     private func ssh(user: String, host: String, command: String) async throws -> String {
-        let keyPath = (settingsManager.settings.sshKeyPath as NSString).expandingTildeInPath
+        let keyPath = (self.settingsManager.settings.sshKeyPath as NSString).expandingTildeInPath
         
         // Эти опции КРИТИЧЕСКИ ВАЖНЫ. Без них ssh будет в интерактивном режиме
         // запрашивать подтверждение ключа хоста и выполнение зависнет.
@@ -205,7 +202,7 @@ class NetworkManager: ObservableObject {
             "-o", "ConnectTimeout=5"             // Таймаут на подключение 5 секунд
         ]
         
-        let result = await runProcess(
+        let result = await self.runProcess(
             executableURL: URL(fileURLWithPath: "/usr/bin/ssh"),
             arguments: ["-i", keyPath] + sshOptions + ["\(user)@\(host)", command]
         )
@@ -221,11 +218,11 @@ class NetworkManager: ObservableObject {
 
     /// Проверяет интернет через роутер (пинг с самого роутера).
     private func checkInternetViaRouter() async -> Double? {
-        let command = "ping -c 1 -W 2 \(settingsManager.settings.checkHost)"
+        let command = "ping -c 1 -W 2 \(self.settingsManager.settings.checkHost)"
         do {
-            let output = try await ssh(
-                user: settingsManager.settings.sshUserRouter,
-                host: settingsManager.settings.routerIP,
+            let output = try await self.ssh(
+                user: self.settingsManager.settings.sshUserRouter,
+                host: self.settingsManager.settings.routerIP,
                 command: command
             )
             // Парсим вывод пинга от роутера
@@ -244,26 +241,26 @@ class NetworkManager: ObservableObject {
     // MARK: - Actions (Действия из меню)
     
     func rebootRouter() {
-        executeAndNotify(title: "Роутер", successMessage: "Команда перезагрузки отправлена.") {
+        self.executeAndNotify(title: "Роутер", successMessage: "Команда перезагрузки отправлена.") {
             _ = try await self.ssh(user: self.settingsManager.settings.sshUserRouter, host: self.settingsManager.settings.routerIP, command: "sleep 2 && reboot")
         }
     }
 
     func wolPC() {
-        executeAndNotify(title: "Компьютер (WOL)", successMessage: "WOL-пакет для ПК отправлен.") {
+        self.executeAndNotify(title: "Компьютер (WOL)", successMessage: "WOL-пакет для ПК отправлен.") {
             let command = "/usr/bin/etherwake -i br-lan \(self.settingsManager.settings.pcMAC)" // Команда может отличаться для разных прошивок роутеров
             _ = try await self.ssh(user: self.settingsManager.settings.sshUserRouter, host: self.settingsManager.settings.routerIP, command: command)
         }
     }
 
     func rebootPC() {
-        executeAndNotify(title: "Компьютер", successMessage: "Команда перезагрузки ПК отправлена.") {
+        self.executeAndNotify(title: "Компьютер", successMessage: "Команда перезагрузки ПК отправлена.") {
             _ = try await self.ssh(user: self.settingsManager.settings.sshUserPC, host: self.settingsManager.settings.pcIP, command: "sudo reboot")
         }
     }
 
     func shutdownPC() {
-        executeAndNotify(title: "Компьютер", successMessage: "Команда выключения ПК отправлена.") {
+        self.executeAndNotify(title: "Компьютер", successMessage: "Команда выключения ПК отправлена.") {
             _ = try await self.ssh(user: self.settingsManager.settings.sshUserPC, host: self.settingsManager.settings.pcIP, command: "sudo shutdown now")
         }
     }
@@ -272,12 +269,12 @@ class NetworkManager: ObservableObject {
         guard !user.isEmpty, !host.isEmpty else {
             return (false, "Поля 'IP-адрес' и 'Пользователь' не могут быть пустыми.")
         }
-        guard settingsManager.isSshKeyPathValid else {
+        guard self.settingsManager.isSshKeyPathValid else {
             return (false, "Путь к SSH ключу недействителен или файл ключа некорректен.")
         }
         
         do {
-            let result = try await ssh(user: user, host: host, command: "echo 'SSH OK'")
+            let result = try await self.ssh(user: user, host: host, command: "echo 'SSH OK'")
             if result.trimmingCharacters(in: .whitespacesAndNewlines) == "SSH OK" {
                 return (true, "SSH-соединение успешно установлено!")
             } else {
@@ -298,18 +295,16 @@ class NetworkManager: ObservableObject {
            let body = new == .online ? "✅ Снова в сети" : "❌ Ушел в офлайн"
            
            Logger.app.info("Отправка уведомления: \(title) - \(body)")
-           sendNotification(title: title, body: body)
+           self.sendNotification(title: title, body: body)
     }
 
     private func executeAndNotify(title: String, successMessage: String, task: @escaping () async throws -> Void) {
         Task {
             do {
                 try await task()
-                // ИСПРАВЛЕНИЕ: Добавляем self.
                 self.sendNotification(title: title, body: successMessage)
             } catch {
                 Logger.network.error("Ошибка выполнения действия '\(title)': \(error.localizedDescription)")
-                // ИСПРАВЛЕНИЕ: Добавляем self.
                 self.sendNotification(title: "Ошибка: \(title)", body: error.localizedDescription)
             }
         }

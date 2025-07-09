@@ -5,27 +5,126 @@ import SwiftUI
 struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Environment(\.openURL) private var openURL
-
+    
     var body: some View {
-        VStack(spacing: 15) {
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable().frame(width: 80, height: 80).padding(.bottom, 5)
-            VStack {
-                Text("NetPulse").font(.largeTitle).fontWeight(.bold)
-                Text("Версия \(settingsManager.appVersion)").foregroundColor(.secondary)
-            }
-            Text("Простая утилита для строки меню macOS для мониторинга и управления домашней сетью.")
-                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true).padding(.horizontal)
-            Divider()
-            HStack {
-                Text("Автор: \(settingsManager.author)")
-                Spacer()
-                Button("GitHub") {
-                    if let url = URL(string: "https://github.com/ykreo") { openURL(url) }
+        VStack(spacing: 0) {
+            // Основной контент
+            VStack(spacing: 24) {
+                // Иконка приложения
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 96, height: 96)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                
+                // Название и версия
+                VStack(spacing: 8) {
+                    Text("NetPulse")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text("Версия \(settingsManager.appVersion)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.secondary.opacity(0.1))
+                        )
                 }
+                
+                // Описание
+                Text("Простая утилита для строки меню macOS для мониторинга и управления домашней сетью.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .lineLimit(nil)
+                    .padding(.horizontal, 16)
+                
+                // Возможности
+                VStack(alignment: .leading, spacing: 8) {
+                    FeatureRow(icon: "wifi", title: "Мониторинг сети", description: "Отслеживание статуса роутера, компьютера и интернета")
+                    FeatureRow(icon: "terminal", title: "SSH управление", description: "Удаленное управление устройствами через SSH")
+                    FeatureRow(icon: "power", title: "Wake-on-LAN", description: "Удаленное включение компьютера")
+                    FeatureRow(icon: "bell", title: "Уведомления", description: "Автоматические уведомления об изменениях")
+                }
+                .padding(.horizontal, 16)
+                
+                Spacer(minLength: 16)
             }
+            .padding(.horizontal, 32)
+            .padding(.top, 32)
+            .padding(.bottom, 24)
+            
+            // Футер
+            VStack(spacing: 0) {
+                Divider()
+                    .padding(.horizontal, 32)
+                
+                HStack(spacing: 16) {
+                    Text("Автор: \(settingsManager.author)")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Button("GitHub") {
+                        if let url = URL(string: "https://github.com/ykreo") {
+                            openURL(url)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
+            }
+            .background(Color(NSColor.windowBackgroundColor))
         }
-        .padding(EdgeInsets(top: 20, leading: 30, bottom: 20, trailing: 30))
-        .frame(minWidth: 400)
+        .frame(minWidth: 480, minHeight: 520)
+        .background(Color(NSColor.windowBackgroundColor))
+    }
+}
+
+// MARK: - Subviews
+
+private struct FeatureRow: View {
+    let icon: String
+    let title: String
+    let description: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.accentColor)
+                .frame(width: 24, height: 24)
+                .background(
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.1))
+                )
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+            
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(NSColor.controlBackgroundColor))
+        )
     }
 }
