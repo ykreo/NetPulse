@@ -1,3 +1,5 @@
+//  Copyright © 2025 ykreo. All rights reserved.
+
 import SwiftUI
 
 @main

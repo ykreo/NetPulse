@@ -1,5 +1,5 @@
 // NetPulse/Models/AppSettings.swift
-
+//  Copyright © 2025 ykreo. All rights reserved.
 import Foundation
 
 struct AppSettings: Codable, Equatable {
@@ -11,6 +11,7 @@ struct AppSettings: Codable, Equatable {
     var sshKeyPath: String
     var checkHost: String
     var launchAtLogin: Bool
+    var wolCommand: String // <- ДОБАВИТЬ
     var hideDockIcon: Bool // <- ИЗМЕНЕНО c showDockIcon
     var backgroundCheckInterval: TimeInterval
 
@@ -24,6 +25,7 @@ struct AppSettings: Codable, Equatable {
             sshKeyPath: NSHomeDirectory() + "/.ssh/id_ed25519",
             checkHost: "1.1.1.1",
             launchAtLogin: false,
+            wolCommand: "/usr/bin/etherwake -i br-lan",
             hideDockIcon: false, // <- ИЗМЕНЕНО. По умолчанию иконка видна.
             backgroundCheckInterval: 60.0
         )

@@ -1,4 +1,5 @@
 // NetPulse/Application/AppDelegate.swift
+//  Copyright © 2025 ykreo. All rights reserved.
 
 import SwiftUI
 import OSLog

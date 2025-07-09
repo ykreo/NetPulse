@@ -1,5 +1,5 @@
 // NetPulse/Models/DeviceStatus.swift
-
+//  Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 
 struct DeviceStatus {

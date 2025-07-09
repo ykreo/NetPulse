@@ -1,5 +1,5 @@
 // NetPulse/Features/About/AboutView.swift
-// Код отличный, оставляем как есть.
+//  Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 
 struct AboutView: View {
@@ -64,7 +64,7 @@ struct AboutView: View {
                     .padding(.horizontal, 32)
                 
                 HStack(spacing: 16) {
-                    Text("Автор: \(settingsManager.author)")
+                    Text("Copyright © 2025 \(settingsManager.author). All rights reserved.")
                         .font(.body)
                         .foregroundColor(.secondary)
                     

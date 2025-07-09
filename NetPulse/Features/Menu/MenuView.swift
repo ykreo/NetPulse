@@ -1,5 +1,5 @@
 // NetPulse/Features/Menu/MenuView.swift
-
+//  Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 
 struct MenuView: View {
@@ -248,24 +248,35 @@ private struct ActionsView: View {
 }
 
 private struct ActionButton: View {
+    @EnvironmentObject var manager: NetworkManager
     let title: String
     let icon: String
     let action: () -> Void
     let isEnabled: Bool
-    
+
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(isEnabled ? .accentColor : .secondary)
-                
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(isEnabled ? .primary : .secondary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+            // Используем ZStack, чтобы наложить ProgressView поверх контента
+            ZStack {
+                // Контент кнопки (иконка и текст)
+                VStack(spacing: 6) {
+                    Image(systemName: icon)
+                        .font(.system(size: 16, weight: .medium))
+
+                    Text(title)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+                .foregroundColor(isEnabled ? .primary : .secondary)
+                .opacity(manager.isUpdating ? 0 : 1) // Скрываем, когда идет загрузка
+
+                // Индикатор загрузки
+                if manager.isUpdating {
+                    ProgressView()
+                        .controlSize(.small)
+                }
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
@@ -279,7 +290,7 @@ private struct ActionButton: View {
             )
         }
         .buttonStyle(.plain)
-        .disabled(!isEnabled)
+        .disabled(!isEnabled || manager.isUpdating)
     }
 }
 
@@ -301,26 +312,28 @@ private struct FooterView: View {
             
             Spacer()
             
-            // Кнопка "Выход"
-            Button("Выход") {
-                NSApplication.shared.terminate(nil)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            
-            // Кнопка "Настройки"
-            Button(action: onSettings) {
-                HStack(spacing: 6) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.caption)
-                    Text("Настройки")
-                        .font(.caption)
-                        .fontWeight(.medium)
+            // Симметричные кнопки одинакового размера
+            HStack(spacing: 8) {
+                Button("Выход") {
+                    NSApplication.shared.terminate(nil)
                 }
-                .frame(height: 24)
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                .frame(minWidth: 80)
+                
+                Button(action: onSettings) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.caption)
+                        Text("Настройки")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .frame(minWidth: 80)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
         }
     }
 }

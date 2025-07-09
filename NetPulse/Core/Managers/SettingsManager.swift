@@ -1,5 +1,5 @@
 // NetPulse/Core/Managers/SettingsManager.swift
-
+//  Copyright © 2025 ykreo. All rights reserved.
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers

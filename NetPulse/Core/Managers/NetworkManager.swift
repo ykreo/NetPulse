@@ -1,4 +1,5 @@
 // NetPulse/Core/Managers/NetworkManager.swift
+//  Copyright © 2025 ykreo. All rights reserved.
 
 import Foundation
 import SwiftUI
@@ -248,7 +249,7 @@ class NetworkManager: ObservableObject {
 
     func wolPC() {
         self.executeAndNotify(title: "Компьютер (WOL)", successMessage: "WOL-пакет для ПК отправлен.") {
-            let command = "/usr/bin/etherwake -i br-lan \(self.settingsManager.settings.pcMAC)" // Команда может отличаться для разных прошивок роутеров
+            let command = "\(self.settingsManager.settings.wolCommand) \(self.settingsManager.settings.pcMAC)"
             _ = try await self.ssh(user: self.settingsManager.settings.sshUserRouter, host: self.settingsManager.settings.routerIP, command: command)
         }
     }
@@ -300,6 +301,8 @@ class NetworkManager: ObservableObject {
 
     private func executeAndNotify(title: String, successMessage: String, task: @escaping () async throws -> Void) {
         Task {
+            self.isUpdating = true // <- Включаем индикатор
+            defer { self.isUpdating = false } // <- Гарантированно выключаем в конце
             do {
                 try await task()
                 self.sendNotification(title: title, body: successMessage)

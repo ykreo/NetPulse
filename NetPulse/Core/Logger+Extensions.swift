@@ -1,4 +1,5 @@
 // NetPulse/Core/Logger+Extensions.swift
+//  Copyright © 2025 ykreo. All rights reserved.
 
 import Foundation
 import OSLog

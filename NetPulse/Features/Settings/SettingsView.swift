@@ -1,5 +1,5 @@
 // NetPulse/Features/Settings/SettingsView.swift
-
+//  Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 import ServiceManagement
 import OSLog
@@ -242,13 +242,13 @@ private struct GeneralSettingsTab: View {
                                     localSettings = settingsManager.settings
                                 }
                                 .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .controlSize(.regular)
                                 
                                 Button("Экспорт...") {
                                     settingsManager.exportSettings()
                                 }
                                 .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .controlSize(.regular)
                             }
                         }
                         
@@ -261,7 +261,7 @@ private struct GeneralSettingsTab: View {
                                 localSettings = settingsManager.settings
                             }
                             .buttonStyle(.bordered)
-                            .controlSize(.small)
+                            .controlSize(.regular)
                         }
                     }
                 }
@@ -313,7 +313,7 @@ private struct NetworkSettingsTab: View {
                         ) {
                             Button("Проверить SSH", action: onTestRouter)
                                 .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .controlSize(.regular)
                         }
                     }
                 }
@@ -338,6 +338,14 @@ private struct NetworkSettingsTab: View {
                             prompt: "00:1A:2B:3C:4D:5E",
                             description: "MAC адрес сетевой карты для Wake-on-LAN"
                         )
+                        ValidationField(
+                            title: "Команда WOL",
+                            text: $localSettings.wolCommand,
+                            focusedField: $focusedField,
+                            isValid: !localSettings.wolCommand.isEmpty, // Простая проверка на непустое значение
+                            prompt: "/usr/bin/etherwake -i br-lan",
+                            description: "Команда для отправки WOL-пакета через роутер"
+                        )
                         
                         ValidationField(
                             title: "Пользователь SSH",
@@ -354,7 +362,7 @@ private struct NetworkSettingsTab: View {
                         ) {
                             Button("Проверить SSH", action: onTestPC)
                                 .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                .controlSize(.regular)
                         }
                     }
                 }
@@ -497,39 +505,30 @@ private struct ValidationField: View {
 private struct SshKeyPicker: View {
     @Binding var keyPath: String
     let isValid: Bool
-    
+    @State private var showEditSheet = false
+
     var body: some View {
         SettingsRow(
             title: "Путь к SSH ключу",
-            description: "Приватный ключ для авторизации на устройствах без пароля"
+            description: "Приватный ключ для авторизации на устройствах"
         ) {
             HStack(spacing: 8) {
                 Text((keyPath as NSString).abbreviatingWithTildeInPath)
-                    .font(.body)
-                    .foregroundColor(isValid ? .primary : .secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                    .frame(minWidth: 120, alignment: .leading)
-                
-                Button("Выбрать...") {
-                    let panel = NSOpenPanel()
-                    panel.canChooseFiles = true
-                    panel.canChooseDirectories = false
-                    panel.allowsMultipleSelection = false
-                    panel.title = "Выберите SSH ключ"
-                    panel.message = "Выберите файл приватного ключа для SSH подключения"
-                    
-                    if panel.runModal() == .OK, let url = panel.urls.first {
-                        keyPath = url.path
-                    }
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(NSColor.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+
+                Button("Изменить...") { showEditSheet = true }
+                    .controlSize(.regular) // Используем новый размер
+
                 Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.caption)
                     .foregroundColor(isValid ? .green : .red)
             }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            SshKeyEditView(keyPath: $keyPath)
         }
     }
 }
