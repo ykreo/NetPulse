@@ -1,40 +1,50 @@
 // NetPulse/Core/Managers/SettingsManager.swift
 //  Copyright © 2025 ykreo. All rights reserved.
+
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 
-private let SETTINGS_KEY = "appSettingsV3" // Меняем ключ, чтобы избежать конфликтов со старой структурой
+private let SETTINGS_KEY = "appSettingsV4" // Снова меняем ключ из-за новой структуры
 
 @MainActor
 class SettingsManager: ObservableObject {
     
+    // MARK: - Published Properties
+    
     @Published private(set) var settings: AppSettings {
         didSet {
-            validateAllFields()
+            validateAllDevices()
         }
+    }
+    
+    // Словарь для хранения статусов валидации для каждого устройства
+    @Published private(set) var deviceValidation: [UUID: Bool] = [:]
+    
+    // Валидация для общих полей
+    @Published private(set) var isSshKeyPathValid = false
+    @Published private(set) var isCheckHostValid = false
+    
+    // Общая валидность всех настроек
+    var areAllFieldsValid: Bool {
+        // Проверяем, что все устройства валидны
+        let allDevicesValid = !deviceValidation.contains(where: { !$0.value })
+        // Проверяем общие настройки
+        return isSshKeyPathValid && isCheckHostValid && allDevicesValid
     }
     
     let appVersion: String
     let author = "ykreo"
 
-    @Published private(set) var isRouterIPValid = false
-    @Published private(set) var isPcIPValid = false
-    @Published private(set) var isPcMACValid = false
-    @Published private(set) var isSshKeyPathValid = false
-    @Published private(set) var isCheckHostValid = false
-    
-    var areAllFieldsValid: Bool {
-        isRouterIPValid && isPcIPValid && isPcMACValid && isSshKeyPathValid &&
-        isCheckHostValid && !settings.sshUserRouter.isEmpty && !settings.sshUserPC.isEmpty
-    }
+    // MARK: - Initializer
     
     init() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "N/A"
         self.appVersion = "\(version) (build \(build))"
         
+        // Загружаем настройки или используем дефолтные
         if let data = UserDefaults.standard.data(forKey: SETTINGS_KEY),
            let decodedSettings = try? JSONDecoder().decode(AppSettings.self, from: data) {
             self.settings = decodedSettings
@@ -44,8 +54,11 @@ class SettingsManager: ObservableObject {
             Logger.settings.info("Используются настройки по умолчанию.")
         }
         
-        validateAllFields()
+        // Первичная валидация при запуске
+        validateAllDevices()
     }
+    
+    // MARK: - Private Methods
     
     private func save() {
         do {
@@ -57,10 +70,14 @@ class SettingsManager: ObservableObject {
         }
     }
     
-    // MARK: - Public API
+    // MARK: - Public API for Settings Management
     
     func applyAndSave(_ newSettings: AppSettings) {
-        self.settings = newSettings
+        // Сортируем устройства перед сохранением
+        var settingsToSave = newSettings
+        settingsToSave.devices.sort { $0.sortOrder < $1.sortOrder }
+        
+        self.settings = settingsToSave
         save()
     }
     
@@ -72,8 +89,9 @@ class SettingsManager: ObservableObject {
         self.settings = AppSettings.defaultSettings()
         save()
     }
+
+    // MARK: - Import/Export (без изменений, но теперь работают с новой структурой)
     
-    // Функции export/import остаются без изменений, они теперь будут работать с новой структурой
     func exportSettings() {
         let savePanel = NSSavePanel()
         savePanel.title = "Экспорт конфигурации NetPulse"
@@ -102,7 +120,7 @@ class SettingsManager: ObservableObject {
             do {
                 let data = try Data(contentsOf: url)
                 let decodedSettings = try JSONDecoder().decode(AppSettings.self, from: data)
-                applyAndSave(decodedSettings)
+                applyAndSave(decodedSettings) // Применяем и сохраняем импортированные настройки
                 Logger.settings.info("Конфигурация импортирована из \(url.path)")
             } catch {
                 Logger.settings.error("Ошибка импорта: \(error.localizedDescription)")
@@ -110,16 +128,28 @@ class SettingsManager: ObservableObject {
         }
     }
     
-    // MARK: - Validation Logic (остается без изменений)
-    // ... весь ваш код валидации ...
-    private func validateAllFields() {
-        isRouterIPValid = validateIP(settings.routerIP)
-        isPcIPValid = validateIP(settings.pcIP)
-        isPcMACValid = validateMAC(settings.pcMAC)
-        isSshKeyPathValid = validateSSHKey(settings.sshKeyPath)
-        isCheckHostValid = validateHost(settings.checkHost)
+    // MARK: - New Validation Logic
+    
+    /// Проверяет валидность всех устройств и общих настроек.
+    private func validateAllDevices() {
+        var validationResults: [UUID: Bool] = [:]
+        for device in settings.devices {
+            // Устройство считается валидным, если у него непустое имя, хост и пользователь
+            let isDeviceValid = !device.name.isEmpty &&
+                                !device.host.isEmpty &&
+                                !device.user.isEmpty &&
+                                (validateIP(device.host) || validateHost(device.host))
+            
+            validationResults[device.id] = isDeviceValid
+        }
+        self.deviceValidation = validationResults
+        
+        // Валидация общих полей
+        self.isSshKeyPathValid = validateSSHKey(settings.sshKeyPath)
+        self.isCheckHostValid = validateHost(settings.checkHost)
     }
 
+    // Функции валидации IP, хоста и SSH-ключа остаются без изменений
     private func validateIP(_ address: String) -> Bool {
         let pattern = #"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#
         return address.range(of: pattern, options: .regularExpression) != nil
@@ -130,12 +160,7 @@ class SettingsManager: ObservableObject {
         let pattern = #"^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$"#
         return host.range(of: pattern, options: .regularExpression) != nil
     }
-
-    private func validateMAC(_ address: String) -> Bool {
-        let pattern = #"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"#
-        return address.range(of: pattern, options: .regularExpression) != nil
-    }
-
+    
     private func validateSSHKey(_ path: String) -> Bool {
         guard !path.isEmpty else { return false }
         let expandedPath = (path as NSString).expandingTildeInPath

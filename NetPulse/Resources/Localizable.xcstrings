@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "ru",
+  "strings" : {
+    "about.title" : {
+      "comment" : "Заголовок окна \"О программе\"",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About NetPulse"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "О программе NetPulse"
+          }
+        }
+      }
+    },
+    "about.version" : {
+      "comment" : "%@ - номер версии",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия %@"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

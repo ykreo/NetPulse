@@ -1,6 +1,20 @@
+// NetPulse/NetPulseApp.swift
 //  Copyright © 2025 ykreo. All rights reserved.
 
 import SwiftUI
+
+struct MenuBarIconView: View {
+    @ObservedObject var networkManager: NetworkManager
+
+    var body: some View {
+        let iconInfo = networkManager.menuBarIconState
+        
+        Image(systemName: iconInfo.name)
+            .font(.title3)
+            .foregroundColor(iconInfo.color)
+            .symbolEffect(.pulse, options: .repeating, isActive: networkManager.isUpdating)
+    }
+}
 
 @main
 struct NetPulseApp: App {
@@ -10,7 +24,6 @@ struct NetPulseApp: App {
     @StateObject private var networkManager: NetworkManager
     
     init() {
-        // Создаем единый экземпляр SettingsManager
         let settings = SettingsManager()
         let network = NetworkManager(settingsManager: settings)
         
@@ -24,16 +37,13 @@ struct NetPulseApp: App {
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
                 .onAppear {
-                    // Передаем менеджеры в AppDelegate после появления UI
                     appDelegate.settingsManager = settingsManager
                     appDelegate.networkManager = networkManager
                 }
         } label: {
-            // ИСПРАВЛЕНО: Новый, элегантный способ анимации
-            Image(systemName: "globe.americas.fill") // Используем одну иконку
-                // Условный модификатор для анимации
-                .symbolEffect(.pulse, options: .repeating, isActive: networkManager.isUpdating)
-                .font(.title3) // Немного увеличим размер для наглядности
+            MenuBarIconView(networkManager: networkManager)
+                // --- ПРИВЯЗЫВАЕМ ID К VIEW, ЧТОБЫ ЗАСТАВИТЬ ЕЕ ПЕРЕРИСОВЫВАТЬСЯ ---
+                .id(networkManager.iconUpdateId)
         }
         .menuBarExtraStyle(.window)
 
@@ -43,12 +53,11 @@ struct NetPulseApp: App {
                 .environmentObject(settingsManager)
         }
         
-        // ВОЗВРАЩАЕМ ОКНО "О ПРОГРАММЕ"
         Window("О программе NetPulse", id: "about") {
             AboutView()
                 .environmentObject(settingsManager)
         }
         .windowResizability(.contentSize)
-        .windowStyle(.hiddenTitleBar) // Делаем окно более минималистичным
+        .windowStyle(.hiddenTitleBar)
     }
 }

@@ -6,6 +6,8 @@ struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Environment(\.openURL) private var openURL
     
+    private let githubURL = URL(string: "https://github.com/ykreo/NetPulse")
+    
     var body: some View {
         VStack(spacing: 0) {
             // Основной контент
@@ -60,33 +62,34 @@ struct AboutView: View {
             
             // Футер
             VStack(spacing: 0) {
-                Divider()
-                    .padding(.horizontal, 32)
-                
-                HStack(spacing: 16) {
-                    Text("Copyright © 2025 \(settingsManager.author). All rights reserved.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Button("GitHub") {
-                        if let url = URL(string: "https://github.com/ykreo") {
-                            openURL(url)
+                            Divider().padding(.horizontal, 32)
+                            
+                            // --- ИСПРАВЛЕНО: Добавлена информация о лицензии и авторстве ---
+                            HStack(alignment: .center, spacing: 16) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Copyright © 2025 \(settingsManager.author). Все права защищены.")
+                                    Text("Распространяется по лицензии MIT.")
+                                }
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                
+                                Spacer()
+                                
+                                if let url = githubURL {
+                                    Button("GitHub") { openURL(url) }
+                                        .buttonStyle(.borderedProminent)
+                                        .controlSize(.small)
+                                        .help("Открыть репозиторий проекта")
+                                }
+                            }
+                            .padding(.horizontal, 32).padding(.vertical, 16)
                         }
+                        .background(Color(NSColor.windowBackgroundColor))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .frame(minWidth: 480, minHeight: 480) // Сделаем окно чуть компактнее
+                    .background(Color(NSColor.windowBackgroundColor))
                 }
-                .padding(.horizontal, 32)
-                .padding(.vertical, 16)
             }
-            .background(Color(NSColor.windowBackgroundColor))
-        }
-        .frame(minWidth: 480, minHeight: 520)
-        .background(Color(NSColor.windowBackgroundColor))
-    }
-}
 
 // MARK: - Subviews
 
