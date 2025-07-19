@@ -12,15 +12,28 @@ struct NetPulseApp: App {
     // Менеджеры состояния, инициализируются один раз и передаются в дочерние View.
     @StateObject private var settingsManager: SettingsManager
     @StateObject private var networkManager: NetworkManager
+    // ИЗМЕНЕНО: Добавляем UpdateManager как StateObject, чтобы он тоже был доступен.
+    @StateObject private var updateManager: UpdateManager
     
     init() {
-        // Создаем экземпляры менеджеров при инициализации приложения.
+        // Создаем экземпляры менеджеров в правильном порядке.
         let settings = SettingsManager()
         let network = NetworkManager(settingsManager: settings)
-        
+        // Инициализируем UpdateManager здесь, он становится частью графа зависимостей.
+        let updater = UpdateManager()
+
         // Инициализируем StateObject с созданными экземплярами.
         _settingsManager = StateObject(wrappedValue: settings)
         _networkManager = StateObject(wrappedValue: network)
+        _updateManager = StateObject(wrappedValue: updater)
+        
+        // ИЗМЕНЕНО: Сразу после создания передаем ссылки в AppDelegate.
+        // Это устраняет гонку состояний.
+        appDelegate.setup(
+            settingsManager: settings,
+            networkManager: network,
+            updateManager: updater
+        )
     }
 
     var body: some Scene {
@@ -29,15 +42,16 @@ struct NetPulseApp: App {
             MenuView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
+                // Передавать менеджеры через .onAppear больше не нужно,
+                // так как мы сделали это в init(), но оставим для совместимости
+                // с вашим текущим кодом, если где-то это еще используется.
                 .onAppear {
-                    // Передаем ссылки на менеджеры в AppDelegate после того, как View появится.
                     appDelegate.settingsManager = settingsManager
                     appDelegate.networkManager = networkManager
+                    appDelegate.updateManager = updateManager
                 }
         } label: {
             MenuBarIconView(networkManager: networkManager)
-                // Привязка уникального ID заставляет View перерисовываться при его изменении.
-                // Это ключевой механизм для динамического обновления иконки.
                 .id(networkManager.iconUpdateId)
         }
         .menuBarExtraStyle(.window)
@@ -47,6 +61,8 @@ struct NetPulseApp: App {
             SettingsView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
+                // ИЗМЕНЕНО: Передаем updateManager и в настройки.
+                .environmentObject(updateManager)
         }
         
         // Кастомное окно "О программе".

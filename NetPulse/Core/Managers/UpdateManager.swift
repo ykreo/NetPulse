@@ -17,41 +17,61 @@ private struct GitHubRelease: Decodable {
     }
 }
 
+// --- ИСПРАВЛЕНО: Добавлено 'ObservableObject' ---
 @MainActor
-class UpdateManager {
+class UpdateManager: ObservableObject {
     
     private let repoURL = URL(string: "https://api.github.com/repos/ykreo/NetPulse/releases/latest")!
     
     /// Проверяет наличие новой версии на GitHub.
     func checkForUpdates(silently: Bool = true) async {
-        Logger.app.info("Проверка обновлений...")
+        Logger.app.info("--- Начинаю проверку обновлений ---")
+        
+        guard let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else {
+            Logger.app.error("!!! Не удалось получить текущую версию приложения из Bundle.")
+            return
+        }
+        Logger.app.info("Текущая версия приложения: \(currentVersion)")
         
         do {
-            let (data, _) = try await URLSession.shared.data(from: repoURL)
-            let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
+            Logger.app.info("Отправляю запрос на URL: \(self.repoURL.absoluteString)")
+            let (data, response) = try await URLSession.shared.data(from: repoURL)
             
-            let latestVersion = release.tagName.replacingOccurrences(of: "v", with: "")
-            guard let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else {
-                Logger.app.error("Не удалось получить текущую версию приложения.")
-                return
+            if let httpResponse = response as? HTTPURLResponse {
+                Logger.app.info("Получен ответ от сервера. Статус код: \(httpResponse.statusCode)")
+                if !(200...299).contains(httpResponse.statusCode) {
+                    Logger.app.error("!!! Сервер вернул ошибку. Проверка прекращена.")
+                    if !silently { presentErrorAlert(error: NSError(domain: "HTTPError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Сервер вернул код статуса \(httpResponse.statusCode)"])) }
+                    return
+                }
             }
             
-            // Сравниваем версии. compare() вернет .orderedAscending, если latestVersion > currentVersion
-            if latestVersion.compare(currentVersion, options: .numeric) == .orderedAscending {
-                Logger.app.info("Найдена новая версия: \(latestVersion). Текущая: \(currentVersion).")
+            Logger.app.info("Пытаюсь декодировать JSON...")
+            let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
+            Logger.app.info("JSON успешно декодирован. Тег релиза: '\(release.tagName)'")
+            
+            let latestVersion = release.tagName.replacingOccurrences(of: "v", with: "")
+            Logger.app.info("Сравниваю версии: Latest = '\(latestVersion)', Current = '\(currentVersion)'")
+            
+            
+            let comparisonResult = latestVersion.compare(currentVersion, options: .numeric)
+            
+            if comparisonResult == .orderedDescending {
+                Logger.app.info(">>> РЕЗУЛЬТАТ: Найдена новая версия! (\(latestVersion) > \(currentVersion))")
                 presentUpdateAlert(for: release)
             } else {
-                Logger.app.info("У вас установлена последняя версия.")
+                Logger.app.info(">>> РЕЗУЛЬТАТ: У вас установлена последняя версия.")
                 if !silently {
                     presentNoUpdateAlert()
                 }
             }
         } catch {
-            Logger.app.error("Ошибка при проверке обновлений: \(error.localizedDescription)")
+            Logger.app.error("!!! КРИТИЧЕСКАЯ ОШИБКА в блоке do-catch: \(error.localizedDescription)")
             if !silently {
                 presentErrorAlert(error: error)
             }
         }
+        Logger.app.info("--- Проверка обновлений завершена ---")
     }
     
     /// Показывает диалоговое окно с предложением обновиться.
@@ -63,7 +83,6 @@ class UpdateManager {
         alert.addButton(withTitle: "Загрузить")
         alert.addButton(withTitle: "Позже")
         
-        // Открываем URL на загрузку в браузере по умолчанию
         if let url = URL(string: release.htmlUrl), alert.runModal() == .alertFirstButtonReturn {
             NSWorkspace.shared.open(url)
         }
@@ -83,7 +102,7 @@ class UpdateManager {
     private func presentErrorAlert(error: Error) {
         let alert = NSAlert()
         alert.messageText = "Ошибка проверки обновлений"
-        alert.informativeText = "Не удалось связаться с сервером GitHub. Пожалуйста, проверьте ваше интернет-соединение.\n\n(\(error.localizedDescription))"
+        alert.informativeText = "Не удалось связаться с сервером GitHub или обработать ответ. Пожалуйста, проверьте ваше интернет-соединение и попробуйте позже.\n\nДетали: \(error.localizedDescription)"
         alert.alertStyle = .warning
         alert.addButton(withTitle: "OK")
         alert.runModal()

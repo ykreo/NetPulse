@@ -25,14 +25,15 @@ struct DeviceStatus: Equatable {
     }
 }
 
+// --- ИСПРАВЛЕНО: Добавлена поддержка локализации ---
 // Расширение для удобного доступа к текстовому представлению и иконкам
 extension DeviceStatus.State {
     var displayName: String {
         switch self {
-        case .online: return "Онлайн"
-        case .offline: return "Офлайн"
-        case .unknown: return "Проверка..."
-        case .loading: return "Выполняется..."
+        case .online: return String(localized: "Online")
+        case .offline: return String(localized: "Offline")
+        case .unknown: return String(localized: "Checking...")
+        case .loading: return String(localized: "Executing...")
         }
     }
     

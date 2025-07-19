@@ -9,8 +9,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var settingsManager: SettingsManager?
     var networkManager: NetworkManager?
     
-    // Менеджер обновлений, доступен для других частей приложения.
-    public let updateManager = UpdateManager()
+    // ИЗМЕНЕНО: Больше не создаем UpdateManager здесь.
+    // public let updateManager = UpdateManager()
+    // Он будет передан нам извне.
+    var updateManager: UpdateManager?
+    
+    // НОВЫЙ МЕТОД: для получения ссылок на менеджеры.
+    func setup(settingsManager: SettingsManager, networkManager: NetworkManager, updateManager: UpdateManager) {
+        self.settingsManager = settingsManager
+        self.networkManager = networkManager
+        self.updateManager = updateManager
+        Logger.app.info("AppDelegate успешно настроен с менеджерами.")
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         updateActivationPolicy()
@@ -19,12 +29,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(windowVisibilityChanged), name: NSWindow.didBecomeMainNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(windowVisibilityChanged), name: NSWindow.willCloseNotification, object: nil)
         
-        // ИЗМЕНЕНО: Проверяем обновления только если это разрешено в настройках.
+        // Проверяем обновления только если это разрешено в настройках.
         Task {
-            // Даем приложению время на инициализацию.
-            try? await Task.sleep(for: .seconds(2))
+            // Больше не нужен sleep, так как менеджеры настраиваются сразу.
             if settingsManager?.settings.checkForUpdatesAutomatically == true {
-                await updateManager.checkForUpdates()
+                // Используем опциональную цепочку, так как updateManager теперь опционал.
+                await updateManager?.checkForUpdates()
             }
         }
     }

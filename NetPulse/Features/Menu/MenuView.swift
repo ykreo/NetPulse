@@ -11,7 +11,7 @@ struct MenuView: View {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.dismiss) private var dismiss
     
-    // ИСПРАВЛЕНИЕ: Логика расчета высоты теперь учитывает реальный статус устройств.
+    // --- ИСПРАВЛЕНО: Логика расчета высоты теперь более стабильна ---
     private var idealHeight: CGFloat {
         let headerHeight: CGFloat = 60
         let footerHeight: CGFloat = 50
@@ -19,23 +19,13 @@ struct MenuView: View {
         let baseDeviceCardHeight: CGFloat = 60
         let actionRowHeight: CGFloat = 45 // Высота ряда с кнопками
         let verticalPadding: CGFloat = 32
-        let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1) // Пространство между карточками
+        let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1)
 
         let devicesHeight = settings.settings.devices.reduce(0) { total, device in
-            // Получаем актуальный статус устройства
-            let status = manager.deviceStatuses[device.id] ?? DeviceStatus(state: .unknown)
-            let isOnline = status.state == .online
-
-            // Проверяем, есть ли видимые действия для ТЕКУЩЕГО статуса
-            let hasVisibleActions = device.actions.contains { action in
-                switch action.displayCondition {
-                case .always: return true
-                case .ifOnline: return isOnline
-                case .ifOffline: return !isOnline
-                }
-            }
-
-            let actionHeight = hasVisibleActions ? actionRowHeight : 0
+            // Проверяем, есть ли у устройства вообще какие-либо действия.
+            // Это делает высоту независимой от текущего онлайн-статуса.
+            let hasAnyActions = !device.actions.isEmpty
+            let actionHeight = hasAnyActions ? actionRowHeight : 0
             return total + baseDeviceCardHeight + actionHeight
         }
         

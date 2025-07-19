@@ -355,7 +355,6 @@
       }
     },
     "Checking..." : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -664,7 +663,6 @@
       }
     },
     "Executing..." : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1152,7 +1150,6 @@
       }
     },
     "Offline" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1186,7 +1183,6 @@
       }
     },
     "Online" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

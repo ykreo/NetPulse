@@ -8,6 +8,8 @@ import OSLog
 struct SettingsView: View {
     @EnvironmentObject private var networkManager: NetworkManager
     @EnvironmentObject private var settingsManager: SettingsManager
+    // ИЗМЕНЕНО: Получаем updateManager из окружения.
+    @EnvironmentObject private var updateManager: UpdateManager
     @Environment(\.dismiss) private var dismiss
     
     @State private var localSettings: AppSettings
@@ -204,6 +206,7 @@ private struct DeviceRowView: View {
 // MARK: - Вкладка "Общие"
 private struct GeneralSettingsTab: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @EnvironmentObject var updateManager: UpdateManager
     @FocusState private var focusedField: String?
     @Binding var localSettings: AppSettings
     
@@ -225,14 +228,12 @@ private struct GeneralSettingsTab: View {
                     }
                 }
                 
-                // ИЗМЕНЕНО: Секция обновлений
                 SettingsGroup(title: "Обновления", icon: "arrow.down.circle") {
                     VStack(spacing: 16) {
                         SettingsRow(title: "Текущая версия", description: "Установленная в данный момент версия NetPulse.") {
                             Text(settingsManager.appVersion).font(.body.monospacedDigit()).foregroundColor(.secondary)
                         }
                         
-                        // НОВЫЙ TOGGLE
                         SettingsRow(title: "Проверять автоматически", description: "Проверять наличие обновлений при запуске приложения.") {
                             Toggle("", isOn: $localSettings.checkForUpdatesAutomatically).labelsHidden()
                         }
@@ -241,9 +242,8 @@ private struct GeneralSettingsTab: View {
                             Button(action: {
                                 Task {
                                     isCheckingForUpdates = true
-                                    if let appDelegate = NSApp.delegate as? AppDelegate {
-                                        await appDelegate.updateManager.checkForUpdates(silently: false)
-                                    }
+                                    // Теперь мы вызываем updateManager напрямую из Environment
+                                    await updateManager.checkForUpdates(silently: false)
                                     isCheckingForUpdates = false
                                 }
                             }) {
