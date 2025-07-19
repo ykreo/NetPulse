@@ -1,28 +1,32 @@
 // NetPulse/Models/AppSettings.swift
-//  Copyright © 2025 ykreo. All rights reserved.
+// Copyright © 2025 ykreo. All rights reserved.
 
 import Foundation
 
+/// Главная структура, хранящая все настройки приложения.
 struct AppSettings: Codable, Equatable {
-    // Старые поля заменены на массив кастомных устройств
     var devices: [Device]
     
-    // Общие настройки приложения остаются
+    // MARK: - Общие настройки
     var sshKeyPath: String
     var checkHost: String
     var launchAtLogin: Bool
     var hideDockIcon: Bool
     var backgroundCheckInterval: TimeInterval
+    
+    // НОВОЕ: Настройка для управления автообновлениями
+    var checkForUpdatesAutomatically: Bool
 
-    // Метод для создания настроек по умолчанию
+    /// Создает настройки по умолчанию для первого запуска.
     static func defaultSettings() -> AppSettings {
-        // Создадим примеры "Роутер" и "Компьютер" для наглядности
         let exampleRouter = Device(
             name: "Роутер",
             host: "192.168.1.1",
             user: "root",
             icon: "wifi.router",
-            commands: SSHCommands(wake: nil, reboot: "reboot", shutdown: nil),
+            actions: [
+                CustomAction(name: "Перезагрузить", command: "reboot", icon: "restart", displayCondition: .ifOnline)
+            ],
             sortOrder: 0
         )
         
@@ -31,21 +35,22 @@ struct AppSettings: Codable, Equatable {
             host: "192.168.1.243",
             user: "ykreo",
             icon: "desktopcomputer",
-            commands: SSHCommands(
-                wake: "/usr/bin/etherwake -i br-lan 74:D0:2B:96:27:AF",
-                reboot: "sudo reboot",
-                shutdown: "sudo shutdown -h now"
-            ),
+            actions: [
+                CustomAction(name: "Включить", command: "/usr/bin/etherwake -i br-lan 74:D0:2B:96:27:AF", icon: "power", displayCondition: .ifOffline),
+                CustomAction(name: "Перезагрузка", command: "sudo reboot", icon: "restart", displayCondition: .ifOnline),
+                CustomAction(name: "Выключение", command: "sudo shutdown -h now", icon: "power.dotted", displayCondition: .ifOnline)
+            ],
             sortOrder: 1
         )
         
         return AppSettings(
-            devices: [exampleRouter, examplePC], // Массив с примерами
+            devices: [exampleRouter, examplePC],
             sshKeyPath: NSHomeDirectory() + "/.ssh/id_ed25519",
-            checkHost: "1.1.1.1", // Глобальный хост для проверки интернета
+            checkHost: "1.1.1.1",
             launchAtLogin: false,
             hideDockIcon: false,
-            backgroundCheckInterval: 60.0
+            backgroundCheckInterval: 60.0,
+            checkForUpdatesAutomatically: true // Включаем по умолчанию
         )
     }
 }
