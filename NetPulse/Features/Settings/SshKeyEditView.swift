@@ -1,5 +1,5 @@
 // NetPulse/Features/Settings/SshKeyEditView.swift
-//  Copyright © 2025 ykreo. All rights reserved.
+// Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 
 struct SshKeyEditView: View {
@@ -8,24 +8,24 @@ struct SshKeyEditView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Редактирование SSH-ключа")
+            Text("ssh.edit.title")
                 .font(.title2)
                 .fontWeight(.bold)
 
-            TextField("Введите или выберите путь к ключу", text: $keyPath)
+            TextField("ssh.edit.placeholder", text: $keyPath)
                 .textFieldStyle(.roundedBorder)
 
             HStack {
-                Text("Быстрый доступ:")
+                Text("ssh.edit.quick_access")
                     .foregroundColor(.secondary)
                 Button("~/.ssh/id_rsa") { keyPath = "~/.ssh/id_rsa" }
                 Button("~/.ssh/id_ed25519") { keyPath = "~/.ssh/id_ed25519" }
             }
 
             HStack {
-                Button("Выбрать файл...") { selectFile() }
+                Button("ssh.edit.button.select") { selectFile() }
                 Spacer()
-                Button("Готово") { dismiss() }.keyboardShortcut(.defaultAction)
+                Button("ssh.edit.button.done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
         }
         .padding(30)

@@ -12,25 +12,39 @@
             "value" : "%1$@@%2$@"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld ms" : {
-
-    },
-    "%lld сек" : {
-
+      "shouldTranslate" : false
     },
     "• v%@" : {
-
+      "shouldTranslate" : false
     },
     "~/.ssh/id_ed25519" : {
-
+      "shouldTranslate" : false
     },
     "~/.ssh/id_rsa" : {
-
+      "shouldTranslate" : false
     },
-    "A simple macOS menu bar utility for monitoring and managing your home network." : {
-      "extractionState" : "stale",
+    "about.copyright" : {
+      "comment" : "Copyright notice",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copyright © 2025 %@. All rights reserved."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copyright © 2025 %@. Все права защищены."
+          }
+        }
+      }
+    },
+    "about.description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -46,505 +60,7 @@
         }
       }
     },
-    "About" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About NetPulse"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О программе NetPulse"
-          }
-        }
-      }
-    },
-    "Action Parameters" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Action Parameters"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Параметры действия"
-          }
-        }
-      }
-    },
-    "Actions (SSH Commands)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actions (SSH Commands)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Действия (SSH Команды)"
-          }
-        }
-      }
-    },
-    "Add" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавить"
-          }
-        }
-      }
-    },
-    "Add new action" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add new action"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавить новое действие"
-          }
-        }
-      }
-    },
-    "Always" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Always"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Всегда"
-          }
-        }
-      }
-    },
-    "Application Behavior" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Application Behavior"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поведение приложения"
-          }
-        }
-      }
-    },
-    "Automatic Check" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatic Check"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверять автоматически"
-          }
-        }
-      }
-    },
-    "Automatically launch NetPulse when you log into macOS." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatically launch NetPulse when you log into macOS."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Автоматически запускать NetPulse при входе в macOS."
-          }
-        }
-      }
-    },
-    "Back online" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "✅ Back online"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "✅ Снова в сети"
-          }
-        }
-      }
-    },
-    "Background Check Interval" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Background Check Interval"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Интервал фоновой проверки"
-          }
-        }
-      }
-    },
-    "Basic Parameters" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Basic Parameters"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Основные параметры"
-          }
-        }
-      }
-    },
-    "Button Title:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Button Title:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Название кнопки:"
-          }
-        }
-      }
-    },
-    "by" : {
-
-    },
-    "Cancel" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отмена"
-          }
-        }
-      }
-    },
-    "Change..." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change..."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Изменить..."
-          }
-        }
-      }
-    },
-    "Check for a new version on GitHub right now." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for a new version on GitHub right now."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверить наличие новой версии на GitHub прямо сейчас."
-          }
-        }
-      }
-    },
-    "Check for updates on application startup." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check for updates on application startup."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверять наличие обновлений при запуске приложения."
-          }
-        }
-      }
-    },
-    "Check Now" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check Now"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверить сейчас"
-          }
-        }
-      }
-    },
-    "Checking..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checking..."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверка..."
-          }
-        }
-      }
-    },
-    "command successfully sent." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "command successfully sent."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "команда успешно отправлена."
-          }
-        }
-      }
-    },
-    "Configuration Management" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration Management"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Управление конфигурацией"
-          }
-        }
-      }
-    },
-    "Configure your monitoring devices and application settings" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configure your monitoring devices and application settings"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настройте устройства для мониторинга и параметры приложения"
-          }
-        }
-      }
-    },
-    "Copyright © 2025 %@. Все права защищены." : {
-
-    },
-    "Copyright © 2025 ykreo. All rights reserved." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2025 ykreo. All rights reserved."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2025 ykreo. Все права защищены."
-          }
-        }
-      }
-    },
-    "Could not connect to the GitHub server. Please check your internet connection." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not connect to the GitHub server. Please check your internet connection."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось связаться с сервером GitHub. Пожалуйста, проверьте ваше интернет-соединение."
-          }
-        }
-      }
-    },
-    "Current Version" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Version"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Текущая версия"
-          }
-        }
-      }
-    },
-    "Device Icon:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Icon:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Иконка устройства:"
-          }
-        }
-      }
-    },
-    "Device Name:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Device Name:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Имя устройства:"
-          }
-        }
-      }
-    },
-    "Devices" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Devices"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Устройства"
-          }
-        }
-      }
-    },
-    "Display" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Display"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отображение"
-          }
-        }
-      }
-    },
-    "Distributed under the MIT License." : {
-      "extractionState" : "stale",
+    "about.license" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -560,25 +76,265 @@
         }
       }
     },
-    "Done" : {
-      "extractionState" : "stale",
+    "about.version" : {
+      "comment" : "Version label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Done"
+            "value" : "Version %@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Готово"
+            "value" : "Версия %@"
           }
         }
       }
     },
-    "Download" : {
-      "extractionState" : "stale",
+    "action.edit.field.command" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH Command:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH Команда:"
+          }
+        }
+      }
+    },
+    "action.edit.field.condition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Button:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать кнопку:"
+          }
+        }
+      }
+    },
+    "action.edit.field.icon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Иконка:"
+          }
+        }
+      }
+    },
+    "action.edit.field.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Button Name:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название кнопки:"
+          }
+        }
+      }
+    },
+    "action.edit.section.display" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отображение"
+          }
+        }
+      }
+    },
+    "action.edit.section.parameters" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parameters"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Параметры"
+          }
+        }
+      }
+    },
+    "action.edit.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Action"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование действия"
+          }
+        }
+      }
+    },
+    "alert.no_update.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the latest version of NetPulse installed."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У вас установлена самая свежая версия NetPulse."
+          }
+        }
+      }
+    },
+    "alert.no_update.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Updates Found"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновлений не найдено"
+          }
+        }
+      }
+    },
+    "alert.restart.button.later" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позже"
+          }
+        }
+      }
+    },
+    "alert.restart.button.restart" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart Now"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перезапустить"
+          }
+        }
+      }
+    },
+    "alert.restart.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To apply changes for the Dock icon, NetPulse needs to be restarted."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтобы изменения для иконки в Dock вступили в силу, необходимо перезапустить NetPulse."
+          }
+        }
+      }
+    },
+    "alert.restart.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart Required"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется перезапуск"
+          }
+        }
+      }
+    },
+    "alert.update_error.message" : {
+      "comment" : "Update error message",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not contact the GitHub server or process the response. Please check your internet connection and try again later.\\n\\nDetails: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось связаться с сервером GitHub или обработать ответ. Пожалуйста, проверьте ваше интернет-соединение и попробуйте позже.\\n\\nДетали: %@"
+          }
+        }
+      }
+    },
+    "alert.update_error.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Check Failed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка проверки обновлений"
+          }
+        }
+      }
+    },
+    "alert.update.button.download" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -594,8 +350,72 @@
         }
       }
     },
-    "Edit" : {
-      "extractionState" : "stale",
+    "alert.update.button.later" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позже"
+          }
+        }
+      }
+    },
+    "alert.update.message" : {
+      "comment" : "Update message",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ is available. Would you like to download it now?\\n\\nWhat's new:\\n%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Найдена версия %@. Хотите загрузить ее сейчас?\\n\\nЧто нового:\\n%@"
+          }
+        }
+      }
+    },
+    "alert.update.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Version Available!"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступна новая версия!"
+          }
+        }
+      }
+    },
+    "common.cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        }
+      }
+    },
+    "common.edit" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -606,158 +426,379 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Править"
+            "value" : "Изменить"
           }
         }
       }
     },
-    "Editing Action" : {
-      "extractionState" : "stale",
+    "common.edit..." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editing Action"
+            "value" : "Edit..."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Редактирование действия"
+            "value" : "Изменить..."
           }
         }
       }
     },
-    "Editing Device" : {
-      "extractionState" : "stale",
+    "common.save" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editing Device"
+            "value" : "Save"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Редактирование устройства"
+            "value" : "Сохранить"
           }
         }
       }
     },
-    "Error" : {
-      "extractionState" : "stale",
+    "common.seconds" : {
+      "comment" : "Seconds format",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error"
+            "value" : "%d sec"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ошибка"
+            "value" : "%d сек"
           }
         }
       }
     },
-    "Executing..." : {
+    "condition.always" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Executing..."
+            "value" : "Always"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выполняется..."
+            "value" : "Всегда"
           }
         }
       }
     },
-    "Exit" : {
-      "extractionState" : "stale",
+    "condition.ifOffline" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exit"
+            "value" : "If Offline"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выход"
+            "value" : "Если офлайн"
           }
         }
       }
     },
-    "Export..." : {
-      "extractionState" : "stale",
+    "condition.ifOnline" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export..."
+            "value" : "If Online"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Экспорт..."
+            "value" : "Если онлайн"
           }
         }
       }
     },
-    "Failed to connect:" : {
+    "device.edit.field.host" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to connect:"
+            "value" : "Host (IP or domain):"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось подключиться:"
+            "value" : "Хост (IP или домен):"
           }
         }
       }
     },
-    "General" : {
-      "extractionState" : "stale",
+    "device.edit.field.icon" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "General"
+            "value" : "Device Icon:"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Общие"
+            "value" : "Иконка устройства:"
           }
         }
       }
     },
-    "Get automatic status change notifications." : {
-      "extractionState" : "stale",
+    "device.edit.field.name" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Get automatic status change notifications."
+            "value" : "Device Name:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя устройства:"
+          }
+        }
+      }
+    },
+    "device.edit.field.user" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH User:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользователь SSH:"
+          }
+        }
+      }
+    },
+    "device.edit.section.actions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions (SSH Commands)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действия (SSH Команды)"
+          }
+        }
+      }
+    },
+    "device.edit.section.general" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Parameters"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Основные параметры"
+          }
+        }
+      }
+    },
+    "device.edit.title.existing" : {
+      "comment" : "Title for editing an existing device",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование: %@"
+          }
+        }
+      }
+    },
+    "device.edit.title.new" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Device"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новое устройство"
+          }
+        }
+      }
+    },
+    "device.internet" : {
+      "comment" : "Имя по умолчанию для проверки сети",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Internet"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Интернет"
+          }
+        }
+      }
+    },
+    "feature.monitoring.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Track the status of your router, computer, and internet."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отслеживание статуса роутера, компьютера и интернета."
+          }
+        }
+      }
+    },
+    "feature.monitoring.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network Monitoring"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мониторинг сети"
+          }
+        }
+      }
+    },
+    "feature.notifications.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get automatic notifications about status changes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Автоматические уведомления об изменениях."
+          }
+        }
+      }
+    },
+    "feature.notifications.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уведомления"
+          }
+        }
+      }
+    },
+    "feature.ssh.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remotely manage your devices via SSH."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаленное управление устройствами через SSH."
+          }
+        }
+      }
+    },
+    "feature.ssh.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH Control"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH управление"
+          }
+        }
+      }
+    },
+    "feature.wol.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remotely wake up your computer."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаленное включение компьютера."
+          }
+        }
+      }
+    },
+    "feature.wol.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wake-on-LAN"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wake-on-LAN"
           }
         }
       }
@@ -778,255 +819,194 @@
         }
       }
     },
-    "Hide Dock Icon" : {
-      "extractionState" : "stale",
+    "help.action.add" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hide Dock Icon"
+            "value" : "Add a new action"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Скрывать иконку в Dock"
+            "value" : "Добавить новое действие"
           }
         }
       }
     },
-    "Host (IP or domain):" : {
-      "extractionState" : "stale",
+    "help.action.remove" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Host (IP or domain):"
+            "value" : "Remove selected action"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Хост (IP или домен):"
+            "value" : "Удалить выбранное действие"
           }
         }
       }
     },
-    "Host and User fields cannot be empty." : {
+    "help.device.add" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Host and User fields cannot be empty."
+            "value" : "Add a new device"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Поля «Хост» и «Пользователь» не могут быть пустыми."
+            "value" : "Добавить новое устройство"
           }
         }
       }
     },
-    "How often to check device statuses in the background." : {
-      "extractionState" : "stale",
+    "help.device.remove" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How often to check device statuses in the background."
+            "value" : "Remove selected device"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Как часто проверять статус устройств в фоне."
+            "value" : "Удалить выбранное устройство"
           }
         }
       }
     },
-    "Icon:" : {
-      "extractionState" : "stale",
+    "help.open.repository" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Icon:"
+            "value" : "Open project repository"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Иконка:"
+            "value" : "Открыть репозиторий проекта"
           }
         }
       }
     },
-    "If Offline" : {
-      "extractionState" : "stale",
+    "menu.author.by" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If Offline"
+            "value" : "by"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Если офлайн"
+            "value" : "от"
           }
         }
       }
     },
-    "If Online" : {
-      "extractionState" : "stale",
+    "menu.footer.about.tooltip" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If Online"
+            "value" : "About NetPulse"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Если онлайн"
+            "value" : "О программе NetPulse"
           }
         }
       }
     },
-    "Import & Export" : {
-      "extractionState" : "stale",
+    "menu.footer.quit" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import & Export"
+            "value" : "Quit"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Импорт и экспорт"
+            "value" : "Выход"
           }
         }
       }
     },
-    "Import..." : {
-      "extractionState" : "stale",
+    "menu.footer.settings" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import..."
+            "value" : "Settings"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Импорт..."
+            "value" : "Настройки"
           }
         }
       }
     },
-    "Internet" : {
+    "menu.unconfigured.button" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Internet"
+            "value" : "Open Settings"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Интернет"
+            "value" : "Открыть настройки"
           }
         }
       }
     },
-    "Internet Check Host" : {
-      "extractionState" : "stale",
+    "menu.unconfigured.description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Internet Check Host"
+            "value" : "Please add devices and configure your SSH key to start monitoring."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Хост для проверки интернета"
+            "value" : "Пожалуйста, добавьте устройства и настройте SSH-ключ для начала мониторинга."
           }
         }
       }
     },
-    "IP/domain to check internet availability." : {
-      "extractionState" : "stale",
+    "menu.unconfigured.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IP/domain to check internet availability."
+            "value" : "Setup Required"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IP/домен для проверки доступности интернета."
-          }
-        }
-      }
-    },
-    "Later" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Later"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Позже"
-          }
-        }
-      }
-    },
-    "Launch at login" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Launch at login"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Запускать при входе"
-          }
-        }
-      }
-    },
-    "Manual Check" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manual Check"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ручная проверка"
+            "value" : "Требуется настройка"
           }
         }
       }
@@ -1047,295 +1027,120 @@
         }
       }
     },
-    "Network Monitoring" : {
-      "extractionState" : "stale",
+    "notification.command.success.body.empty" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Network Monitoring"
+            "value" : "Command sent successfully."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Мониторинг сети"
+            "value" : "Команда успешно отправлена."
           }
         }
       }
     },
-    "Network Parameters" : {
-      "extractionState" : "stale",
+    "notification.status_change.body.offline" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Network Parameters"
+            "value" : "Went offline"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Общие параметры сети"
+            "value" : "Не в сети"
           }
         }
       }
     },
-    "New Device" : {
-      "extractionState" : "stale",
+    "notification.status_change.body.online" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New Device"
+            "value" : "Back online"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Новое устройство"
+            "value" : "Снова в сети"
           }
         }
       }
     },
-    "New version available!" : {
-      "extractionState" : "stale",
+    "notification.status_change.title" : {
+      "comment" : "Status change title",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version available!"
+            "value" : "%@ Status Changed"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Доступна новая версия!"
+            "value" : "%@ Статус изменен"
           }
         }
       }
     },
-    "No updates found" : {
-      "extractionState" : "stale",
+    "settings.button.checkNow" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No updates found"
+            "value" : "Check Now"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Обновлений не найдено"
+            "value" : "Проверить сейчас"
           }
         }
       }
     },
-    "Notifications" : {
-      "extractionState" : "stale",
+    "settings.button.export" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notifications"
+            "value" : "Export..."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Уведомления"
+            "value" : "Экспорт..."
           }
         }
       }
     },
-    "Offline" : {
+    "settings.button.import" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Offline"
+            "value" : "Import..."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Офлайн"
+            "value" : "Импорт..."
           }
         }
       }
     },
-    "OK" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
-    "Online" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Онлайн"
-          }
-        }
-      }
-    },
-    "Open project repository" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open project repository"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Открыть репозиторий проекта"
-          }
-        }
-      }
-    },
-    "Open Settings" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Settings"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Открыть настройки"
-          }
-        }
-      }
-    },
-    "Please add devices and configure SSH keys to begin monitoring." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please add devices and configure SSH keys to begin monitoring."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пожалуйста, добавьте устройства и настройте SSH-ключи для начала мониторинга."
-          }
-        }
-      }
-    },
-    "Private key for authorization on devices." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Private key for authorization on devices."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Приватный ключ для авторизации на устройствах."
-          }
-        }
-      }
-    },
-    "Reboot" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reboot"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Перезагрузка"
-          }
-        }
-      }
-    },
-    "Remotely manage your devices via SSH." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remotely manage your devices via SSH."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удаленное управление устройствами через SSH."
-          }
-        }
-      }
-    },
-    "Remotely power on your computer." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remotely power on your computer."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удаленное включение компьютера."
-          }
-        }
-      }
-    },
-    "Remove selected action" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove selected action"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удалить выбранное действие"
-          }
-        }
-      }
-    },
-    "Reset" : {
-      "extractionState" : "stale",
+    "settings.button.reset" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1351,432 +1156,87 @@
         }
       }
     },
-    "Reset Settings" : {
-      "extractionState" : "stale",
+    "settings.field.checkHost.description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset Settings"
+            "value" : "IP/domain to verify internet connectivity."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сброс настроек"
+            "value" : "IP/домен для проверки доступности интернета."
           }
         }
       }
     },
-    "Restart" : {
-      "extractionState" : "stale",
+    "settings.field.checkHost.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restart"
+            "value" : "Host for Internet Check"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Перезапустить"
+            "value" : "Хост для проверки интернета"
           }
         }
       }
     },
-    "Restart is required" : {
-      "extractionState" : "stale",
+    "settings.group.behavior" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restart is required"
+            "value" : "Application Behavior"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Требуется перезапуск"
+            "value" : "Поведение приложения"
           }
         }
       }
     },
-    "Restore all settings to their default values." : {
-      "extractionState" : "stale",
+    "settings.group.config" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore all settings to their default values."
+            "value" : "Configuration Management"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Восстановить все настройки до исходных значений."
+            "value" : "Управление конфигурацией"
           }
         }
       }
     },
-    "Save" : {
-      "extractionState" : "stale",
+    "settings.group.network" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save"
+            "value" : "General Network Parameters"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сохранить"
+            "value" : "Общие параметры сети"
           }
         }
       }
     },
-    "Save and load all application settings." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save and load all application settings."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сохранение и загрузка всех настроек приложения."
-          }
-        }
-      }
-    },
-    "sec" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "sec"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "сек"
-          }
-        }
-      }
-    },
-    "Settings" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настройки"
-          }
-        }
-      }
-    },
-    "Show Button:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Button:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Показывать кнопку:"
-          }
-        }
-      }
-    },
-    "Show the application only in the menu bar." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show the application only in the menu bar."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Показывать приложение только в строке меню."
-          }
-        }
-      }
-    },
-    "Shutdown" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shutdown"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выключение"
-          }
-        }
-      }
-    },
-    "SSH Command:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH Command:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH Команда:"
-          }
-        }
-      }
-    },
-    "SSH connection successful!" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH connection successful!"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH-соединение успешно установлено!"
-          }
-        }
-      }
-    },
-    "SSH Control" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH Control"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH управление"
-          }
-        }
-      }
-    },
-    "SSH Key Path" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH Key Path"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Путь к SSH ключу"
-          }
-        }
-      }
-    },
-    "SSH key path is invalid." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH key path is invalid."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Путь к SSH ключу недействителен."
-          }
-        }
-      }
-    },
-    "SSH User:" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSH User:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пользователь SSH:"
-          }
-        }
-      }
-    },
-    "SSH Команда:" : {
-
-    },
-    "Status changed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status changed"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "изменил статус"
-          }
-        }
-      }
-    },
-    "Success" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Success"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Успех"
-          }
-        }
-      }
-    },
-    "The currently installed version of NetPulse." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The currently installed version of NetPulse."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Установленная в данный момент версия NetPulse."
-          }
-        }
-      }
-    },
-    "To apply the changes for the Dock icon, NetPulse needs to be restarted." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To apply the changes for the Dock icon, NetPulse needs to be restarted."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Чтобы изменения для иконки в Dock вступили в силу, необходимо перезапустить NetPulse."
-          }
-        }
-      }
-    },
-    "Track the status of your router, computer, and internet." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Track the status of your router, computer, and internet."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отслеживание статуса роутера, компьютера и интернета."
-          }
-        }
-      }
-    },
-    "Unconfigured" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration Required"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Требуется настройка"
-          }
-        }
-      }
-    },
-    "Unexpected response received:" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unexpected response received:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Получен неожиданный ответ:"
-          }
-        }
-      }
-    },
-    "Update Check Error" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Check Error"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ошибка проверки обновлений"
-          }
-        }
-      }
-    },
-    "Updates" : {
-      "extractionState" : "stale",
+    "settings.group.updates" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1792,253 +1252,597 @@
         }
       }
     },
-    "Version %@ is available. Would you like to download it now?" : {
-      "extractionState" : "stale",
+    "settings.header.subtitle" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version %@ is available. Would you like to download it now?"
+            "value" : "Configure devices for monitoring and application settings"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Найдена версия %@. Хотите загрузить ее сейчас?"
+            "value" : "Настройте устройства для мониторинга и параметры приложения"
           }
         }
       }
     },
-    "Wake Up" : {
-      "extractionState" : "stale",
+    "settings.header.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wake Up"
+            "value" : "Settings"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Включить"
+            "value" : "Настройки"
           }
         }
       }
     },
-    "Wake-on-LAN" : {
-      "extractionState" : "stale",
+    "settings.row.autoCheckUpdates.description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wake-on-LAN"
+            "value" : "Check for updates when the application starts."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wake-on-LAN"
+            "value" : "Проверять наличие обновлений при запуске приложения."
           }
         }
       }
     },
-    "Went offline" : {
+    "settings.row.autoCheckUpdates.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "❌ Went offline"
+            "value" : "Check Automatically"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "❌ Ушел в офлайн"
+            "value" : "Проверять автоматически"
           }
         }
       }
     },
-    "What's new:" : {
-      "extractionState" : "stale",
+    "settings.row.checkInterval.description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What's new:"
+            "value" : "How often to check device statuses in the background."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Что нового:"
+            "value" : "Как часто проверять статус устройств в фоне."
           }
         }
       }
     },
-    "You have the latest version of NetPulse installed." : {
-      "extractionState" : "stale",
+    "settings.row.checkInterval.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have the latest version of NetPulse installed."
+            "value" : "Background Check Interval"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У вас установлена самая свежая версия NetPulse."
+            "value" : "Интервал фоновой проверки"
           }
         }
       }
     },
-    "Быстрый доступ:" : {
-
+    "settings.row.currentVersion.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The currently installed version of NetPulse."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установленная в данный момент версия NetPulse."
+          }
+        }
+      }
     },
-    "Введите или выберите путь к ключу" : {
-
+    "settings.row.currentVersion.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Version"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущая версия"
+          }
+        }
+      }
     },
-    "Версия %@" : {
-
+    "settings.row.hideDockIcon.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show the application only in the menu bar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать приложение только в строке меню."
+          }
+        }
+      }
     },
-    "Выбрать файл..." : {
-
+    "settings.row.hideDockIcon.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide Dock Icon"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скрывать иконку в Dock"
+          }
+        }
+      }
     },
-    "Выход" : {
-
+    "settings.row.importExport.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save and load all application settings."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранение и загрузка всех настроек приложения."
+          }
+        }
+      }
     },
-    "Готово" : {
-
+    "settings.row.importExport.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import & Export"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт и экспорт"
+          }
+        }
+      }
     },
-    "Действия (SSH Команды)" : {
-
+    "settings.row.launchAtLogin.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically start NetPulse when you log in to macOS."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически запускать NetPulse при входе в macOS."
+          }
+        }
+      }
     },
-    "Добавить новое действие" : {
-
+    "settings.row.launchAtLogin.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launch at Login"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запускать при входе"
+          }
+        }
+      }
     },
-    "Добавить новое устройство" : {
-
+    "settings.row.manualCheck.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for a new version on GitHub right now."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить наличие новой версии на GitHub прямо сейчас."
+          }
+        }
+      }
     },
-    "Изменить" : {
-
+    "settings.row.manualCheck.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual Check"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ручная проверка"
+          }
+        }
+      }
     },
-    "Изменить..." : {
-
+    "settings.row.reset.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore all settings to their default values."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановить все настройки до исходных значений."
+          }
+        }
+      }
     },
-    "Иконка устройства:" : {
-
+    "settings.row.reset.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Settings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сброс настроек"
+          }
+        }
+      }
     },
-    "Иконка:" : {
-
+    "settings.row.sshKey.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The private key for authorization on devices."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватный ключ для авторизации на устройствах."
+          }
+        }
+      }
     },
-    "Импорт..." : {
-
+    "settings.row.sshKey.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH Key Path"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Путь к SSH ключу"
+          }
+        }
+      }
     },
-    "Имя устройства:" : {
-
+    "settings.tab.devices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devices"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Устройства"
+          }
+        }
+      }
     },
-    "Название кнопки:" : {
-
+    "settings.tab.general" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общие"
+          }
+        }
+      }
     },
-    "Настройки" : {
-
+    "ssh.edit.button.done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готово"
+          }
+        }
+      }
     },
-    "Настройте устройства для мониторинга и параметры приложения" : {
-
+    "ssh.edit.button.select" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select File..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать файл..."
+          }
+        }
+      }
     },
-    "Новое устройство" : {
-
+    "ssh.edit.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter or select the key path"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите или выберите путь к ключу"
+          }
+        }
+      }
     },
-    "О программе" : {
-
+    "ssh.edit.quick_access" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Access:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрый доступ:"
+          }
+        }
+      }
     },
-    "О программе NetPulse" : {
-
+    "ssh.edit.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit SSH Key"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование SSH-ключа"
+          }
+        }
+      }
     },
-    "Общие" : {
-
+    "ssh.error.connection_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to connect:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось подключиться:"
+          }
+        }
+      }
     },
-    "Основные параметры" : {
-
+    "ssh.error.empty_fields" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host and User fields cannot be empty."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поля \"Хост\" и \"Пользователь\" не могут быть пустыми."
+          }
+        }
+      }
     },
-    "Открыть настройки" : {
-
+    "ssh.error.invalid_key_path" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH key path is invalid."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Путь к SSH ключу недействителен."
+          }
+        }
+      }
     },
-    "Открыть репозиторий проекта" : {
-
+    "ssh.error.unexpected_response" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unexpected response received:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Получен неожиданный ответ:"
+          }
+        }
+      }
     },
-    "Отмена" : {
-
+    "ssh.success.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH connection successful!"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH-соединение успешно!"
+          }
+        }
+      }
     },
-    "Отображение" : {
-
+    "status.checking" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка..."
+          }
+        }
+      }
     },
-    "Параметры" : {
-
+    "status.executing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Executing..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выполняется…"
+          }
+        }
+      }
     },
-    "Перезапустить" : {
-
+    "status.offline" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Офлайн"
+          }
+        }
+      }
     },
-    "Пожалуйста, добавьте устройства и настройте SSH-ключи для начала мониторинга." : {
-
+    "status.online" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Онлайн"
+          }
+        }
+      }
     },
-    "Позже" : {
-
-    },
-    "Показывать кнопку:" : {
-
-    },
-    "Пользователь SSH:" : {
-
-    },
-    "Проверить сейчас" : {
-
-    },
-    "Простая утилита для строки меню macOS для мониторинга и управления домашней сетью." : {
-
-    },
-    "Распространяется по лицензии MIT." : {
-
-    },
-    "Редактирование SSH-ключа" : {
-
-    },
-    "Редактирование действия" : {
-
-    },
-    "Редактирование: %@" : {
-
-    },
-    "Сбросить" : {
-
-    },
-    "Сохранить" : {
-
-    },
-    "Требуется настройка" : {
-
-    },
-    "Требуется перезапуск" : {
-
-    },
-    "Удалить выбранное действие" : {
-
-    },
-    "Удалить выбранное устройство" : {
-
-    },
-    "Устройства" : {
-
-    },
-    "Хост (IP или домен):" : {
-
-    },
-    "Чтобы изменения для иконки в Dock вступили в силу, необходимо перезапустить NetPulse." : {
-
-    },
-    "Экспорт..." : {
-
+    "window.title.about" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About NetPulse"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О программе NetPulse"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

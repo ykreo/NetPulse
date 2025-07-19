@@ -1,5 +1,5 @@
 // NetPulse/Models/DeviceStatus.swift
-//  Copyright © 2025 ykreo. All rights reserved.
+// Copyright © 2025 ykreo. All rights reserved.
 
 import SwiftUI
 
@@ -8,13 +8,12 @@ struct DeviceStatus: Equatable {
         case online
         case offline
         case unknown
-        case loading // Новый статус для отображения процесса выполнения команды
+        case loading
     }
 
     var state: State = .unknown
-    var latency: Double? // Задержка в мс
+    var latency: Double?
 
-    // Цвет для отображения статуса
     var displayColor: Color {
         switch state {
         case .online: return .green
@@ -25,18 +24,16 @@ struct DeviceStatus: Equatable {
     }
 }
 
-// --- ИСПРАВЛЕНО: Добавлена поддержка локализации ---
-// Расширение для удобного доступа к текстовому представлению и иконкам
 extension DeviceStatus.State {
-    var displayName: String {
+    var displayName: LocalizedStringKey {
         switch self {
-        case .online: return String(localized: "Online")
-        case .offline: return String(localized: "Offline")
-        case .unknown: return String(localized: "Checking...")
-        case .loading: return String(localized: "Executing...")
+        case .online: return "status.online"
+        case .offline: return "status.offline"
+        case .unknown: return "status.checking"
+        case .loading: return "status.executing"
         }
     }
-    
+
     var iconName: String {
         switch self {
         case .online: return "wifi"

@@ -66,7 +66,7 @@ struct NetPulseApp: App {
         }
         
         // Кастомное окно "О программе".
-        Window("О программе NetPulse", id: "about") {
+        Window("window.title.about", id: "about") {
             AboutView()
                 .environmentObject(settingsManager)
         }

@@ -103,7 +103,6 @@ final class NetworkManager: ObservableObject {
         updateMenuBarIconState()
     }
     
-    // ИСПРАВЛЕНО: Логика выполнения команды
     func executeCommand(for device: Device, command: String?) {
         guard let commandToExecute = command, !commandToExecute.isEmpty else { return }
 
@@ -128,7 +127,7 @@ final class NetworkManager: ObservableObject {
             
             do {
                 let output = try await ssh(user: targetUser, host: targetHost, command: commandToExecute)
-                let successMessage = output.isEmpty ? "Команда успешно отправлена." : output
+                let successMessage = output.isEmpty ? String(localized: "notification.command.success.body.empty") : output
                 sendNotification(title: "✅ \(device.name)", body: successMessage)
             } catch {
                 Logger.network.error("Ошибка выполнения команды для '\(device.name)': \(error.localizedDescription)")
@@ -138,16 +137,16 @@ final class NetworkManager: ObservableObject {
     }
     
     func testSSHConnection(user: String, host: String) async -> (Bool, String) {
-        guard !user.isEmpty, !host.isEmpty else { return (false, String(localized: "Host and User fields cannot be empty.")) }
-        guard settingsManager.isSshKeyPathValid else { return (false, String(localized: "SSH key path is invalid.")) }
+        guard !user.isEmpty, !host.isEmpty else { return (false, String(localized: "ssh.error.empty_fields")) }
+        guard settingsManager.isSshKeyPathValid else { return (false, String(localized: "ssh.error.invalid_key_path")) }
         
         do {
             let result = try await ssh(user: user, host: host, command: "echo 'SSH OK'")
             let isSuccess = result.trimmingCharacters(in: .whitespacesAndNewlines) == "SSH OK"
-            let message = isSuccess ? String(localized: "SSH connection successful!") : "\(String(localized: "Unexpected response received:")) \(result)"
+            let message = isSuccess ? String(localized: "ssh.success.message") : "\(String(localized: "ssh.error.unexpected_response")) \(result)"
             return (isSuccess, message)
         } catch {
-            return (false, "\(String(localized: "Failed to connect:")) \(error.localizedDescription)")
+            return (false, "\(String(localized: "ssh.error.connection_failed")) \(error.localizedDescription)")
         }
     }
     
@@ -189,9 +188,9 @@ final class NetworkManager: ObservableObject {
     private func checkAndNotify(device: Device?, old: DeviceStatus.State, new: DeviceStatus.State) {
         guard old != .unknown, new != .unknown, old != new else { return }
         
-        let deviceName = device?.name ?? String(localized: "Internet")
-        let title = "\(deviceName) \(String(localized: "Status changed"))"
-        let body = new == .online ? String(localized: "Back online") : String(localized: "Went offline")
+        let deviceName = device?.name ?? String(localized: "device.internet")
+        let title = String(format: NSLocalizedString("notification.status_change.title", comment: "Status change title"), deviceName)
+        let body = new == .online ? String(localized: "notification.status_change.body.online") : String(localized: "notification.status_change.body.offline")
         sendNotification(title: title, body: body)
     }
     
@@ -277,4 +276,4 @@ final class NetworkManager: ObservableObject {
             throw NSError(domain: "SSH Error", code: Int(result.exitCode), userInfo: [NSLocalizedDescriptionKey: errorDescription])
         }
     }
-}
+} // <- Вот правильная закрывающая скобка для всего класса

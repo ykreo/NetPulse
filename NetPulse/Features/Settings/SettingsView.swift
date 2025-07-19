@@ -8,7 +8,6 @@ import OSLog
 struct SettingsView: View {
     @EnvironmentObject private var networkManager: NetworkManager
     @EnvironmentObject private var settingsManager: SettingsManager
-    // ИЗМЕНЕНО: Получаем updateManager из окружения.
     @EnvironmentObject private var updateManager: UpdateManager
     @Environment(\.dismiss) private var dismiss
     
@@ -19,7 +18,8 @@ struct SettingsView: View {
     @State private var isCreatingNewDevice = false
     
     init() {
-        _localSettings = State(initialValue: SettingsManager().settings)
+        // ИСПРАВЛЕНИЕ: Убрали лишнее создание SettingsManager. Теперь используется только EnvironmentObject.
+        _localSettings = State(initialValue: AppSettings.defaultSettings())
     }
     
     var body: some View {
@@ -28,19 +28,20 @@ struct SettingsView: View {
             Divider().padding(.horizontal, 32)
             TabView {
                 GeneralSettingsTab(localSettings: $localSettings)
-                    .tabItem { Label("Общие", systemImage: "gear") }
+                    .tabItem { Label("settings.tab.general", systemImage: "gear") }
 
                 DevicesSettingsTab(
                     localSettings: $localSettings,
                     onEdit: { device in self.editingDevice = device },
                     onCreate: { self.isCreatingNewDevice = true }
                 )
-                .tabItem { Label("Устройства", systemImage: "server.rack") }
+                .tabItem { Label("settings.tab.devices", systemImage: "server.rack") }
             }
             .frame(minWidth: 700, minHeight: 520)
             footer
         }
         .onAppear {
+            // При появлении окна синхронизируем локальное состояние с реальными настройками.
             localSettings = settingsManager.settings
         }
         .onChange(of: localSettings) { _, newSettings in
@@ -51,11 +52,11 @@ struct SettingsView: View {
                 showRestartAlert = true
             }
         }
-        .alert("Требуется перезапуск", isPresented: $showRestartAlert) {
-            Button("Перезапустить") { restartApp() }
-            Button("Позже", role: .cancel) {}
+        .alert("alert.restart.title", isPresented: $showRestartAlert) {
+            Button("alert.restart.button.restart") { restartApp() }
+            Button("alert.restart.button.later", role: .cancel) {}
         } message: {
-            Text("Чтобы изменения для иконки в Dock вступили в силу, необходимо перезапустить NetPulse.")
+            Text("alert.restart.message")
         }
         .sheet(isPresented: $isCreatingNewDevice) {
             DeviceEditView(device: .new()) { newDevice in
@@ -75,8 +76,8 @@ struct SettingsView: View {
     
     private var header: some View {
         VStack(spacing: 8) {
-            Text("Настройки").font(.largeTitle).fontWeight(.bold)
-            Text("Настройте устройства для мониторинга и параметры приложения").font(.body).foregroundColor(.secondary)
+            Text("settings.header.title").font(.largeTitle).fontWeight(.bold)
+            Text("settings.header.subtitle").font(.body).foregroundColor(.secondary)
         }
         .padding(.horizontal, 32).padding(.top, 24).padding(.bottom, 16)
     }
@@ -86,8 +87,8 @@ struct SettingsView: View {
             Divider().padding(.horizontal, 32)
             HStack(spacing: 12) {
                 Spacer()
-                Button("Отмена", role: .cancel) { dismiss() }.buttonStyle(.bordered).controlSize(.large)
-                Button("Сохранить") {
+                Button("common.cancel", role: .cancel) { dismiss() }.buttonStyle(.bordered).controlSize(.large)
+                Button("common.save") {
                     saveChanges()
                     dismiss()
                 }
@@ -147,11 +148,11 @@ private struct DevicesSettingsTab: View {
 
             HStack {
                 Button(action: onCreate) { Image(systemName: "plus") }
-                    .help("Добавить новое устройство")
+                    .help("help.device.add")
                 
                 Button(action: deleteSelectedDevice) { Image(systemName: "minus") }
                     .disabled(selection == nil)
-                    .help("Удалить выбранное устройство")
+                    .help("help.device.remove")
                 
                 Spacer()
             }
@@ -196,7 +197,7 @@ private struct DeviceRowView: View {
                 Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .foregroundColor(isValid ? .green : .red)
             }
-            Button("Изменить", action: onEdit).buttonStyle(.bordered)
+            Button("common.edit", action: onEdit).buttonStyle(.bordered)
         }
         .padding(.vertical, 8)
     }
@@ -215,41 +216,40 @@ private struct GeneralSettingsTab: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                SettingsGroup(title: "Поведение приложения", icon: "macwindow") {
+                SettingsGroup(title: "settings.group.behavior", icon: "macwindow") {
                     VStack(spacing: 16) {
-                        SettingsRow(title: "Запускать при входе", description: "Автоматически запускать NetPulse при входе в macOS.") { Toggle("", isOn: $localSettings.launchAtLogin).labelsHidden() }
-                        SettingsRow(title: "Скрывать иконку в Dock", description: "Показывать приложение только в строке меню.") { Toggle("", isOn: $localSettings.hideDockIcon).labelsHidden() }
-                        SettingsRow(title: "Интервал фоновой проверки", description: "Как часто проверять статус устройств в фоне.") {
+                        SettingsRow(title: "settings.row.launchAtLogin.title", description: "settings.row.launchAtLogin.description") { Toggle("", isOn: $localSettings.launchAtLogin).labelsHidden() }
+                        SettingsRow(title: "settings.row.hideDockIcon.title", description: "settings.row.hideDockIcon.description") { Toggle("", isOn: $localSettings.hideDockIcon).labelsHidden() }
+                        SettingsRow(title: "settings.row.checkInterval.title", description: "settings.row.checkInterval.description") {
                             HStack(spacing: 8) {
                                 Stepper(value: $localSettings.backgroundCheckInterval, in: 10...3600, step: 10) { EmptyView() }.labelsHidden()
-                                Text("\(Int(localSettings.backgroundCheckInterval)) сек").frame(minWidth: 60, alignment: .trailing)
+                                Text(String(format: NSLocalizedString("common.seconds", comment: "Seconds format"), Int(localSettings.backgroundCheckInterval))).frame(minWidth: 60, alignment: .trailing)
                             }
                         }
                     }
                 }
                 
-                SettingsGroup(title: "Обновления", icon: "arrow.down.circle") {
+                SettingsGroup(title: "settings.group.updates", icon: "arrow.down.circle") {
                     VStack(spacing: 16) {
-                        SettingsRow(title: "Текущая версия", description: "Установленная в данный момент версия NetPulse.") {
+                        SettingsRow(title: "settings.row.currentVersion.title", description: "settings.row.currentVersion.description") {
                             Text(settingsManager.appVersion).font(.body.monospacedDigit()).foregroundColor(.secondary)
                         }
                         
-                        SettingsRow(title: "Проверять автоматически", description: "Проверять наличие обновлений при запуске приложения.") {
+                        SettingsRow(title: "settings.row.autoCheckUpdates.title", description: "settings.row.autoCheckUpdates.description") {
                             Toggle("", isOn: $localSettings.checkForUpdatesAutomatically).labelsHidden()
                         }
                         
-                        SettingsRow(title: "Ручная проверка", description: "Проверить наличие новой версии на GitHub прямо сейчас.") {
+                        SettingsRow(title: "settings.row.manualCheck.title", description: "settings.row.manualCheck.description") {
                             Button(action: {
                                 Task {
                                     isCheckingForUpdates = true
-                                    // Теперь мы вызываем updateManager напрямую из Environment
                                     await updateManager.checkForUpdates(silently: false)
                                     isCheckingForUpdates = false
                                 }
                             }) {
                                 HStack {
                                     if isCheckingForUpdates { ProgressView().controlSize(.small) }
-                                    Text("Проверить сейчас")
+                                    Text("settings.button.checkNow")
                                 }
                             }
                             .disabled(isCheckingForUpdates)
@@ -257,23 +257,24 @@ private struct GeneralSettingsTab: View {
                     }
                 }
                 
-                SettingsGroup(title: "Общие параметры сети", icon: "globe") {
+                SettingsGroup(title: "settings.group.network", icon: "globe") {
                     VStack(spacing: 16) {
                         SshKeyPicker(keyPath: $localSettings.sshKeyPath, isValid: settingsManager.isSshKeyPathValid)
-                        ValidationField(title: "Хост для проверки интернета", text: $localSettings.checkHost, focusedField: $focusedField, isValid: settingsManager.isCheckHostValid, description: "IP/домен для проверки доступности интернета.")
+                        // ИСПРАВЛЕНО: Теперь мы передаем строковый ключ для FocusState
+                        ValidationField(key: "checkHost", title: "settings.field.checkHost.title", text: $localSettings.checkHost, focusedField: $focusedField, isValid: settingsManager.isCheckHostValid, description: "settings.field.checkHost.description")
                     }
                 }
                 
-                SettingsGroup(title: "Управление конфигурацией", icon: "doc.text") {
+                SettingsGroup(title: "settings.group.config", icon: "doc.text") {
                     VStack(spacing: 16) {
-                        SettingsRow(title: "Импорт и экспорт", description: "Сохранение и загрузка всех настроек приложения.") {
+                        SettingsRow(title: "settings.row.importExport.title", description: "settings.row.importExport.description") {
                             HStack(spacing: 8) {
-                                Button("Импорт...") { settingsManager.importSettings(); localSettings = settingsManager.settings }
-                                Button("Экспорт...") { settingsManager.exportSettings() }
+                                Button("settings.button.import") { settingsManager.importSettings(); localSettings = settingsManager.settings }
+                                Button("settings.button.export") { settingsManager.exportSettings() }
                             }.buttonStyle(.bordered).controlSize(.regular)
                         }
-                        SettingsRow(title: "Сброс настроек", description: "Восстановить все настройки до исходных значений.") {
-                            Button("Сбросить", role: .destructive) { settingsManager.restoreDefaults(); localSettings = settingsManager.settings }.buttonStyle(.bordered).controlSize(.regular)
+                        SettingsRow(title: "settings.row.reset.title", description: "settings.row.reset.description") {
+                            Button("settings.button.reset", role: .destructive) { settingsManager.restoreDefaults(); localSettings = settingsManager.settings }.buttonStyle(.bordered).controlSize(.regular)
                         }
                     }
                 }
@@ -297,22 +298,22 @@ private struct DeviceEditView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(device.name.isEmpty ? "Новое устройство" : "Редактирование: \(device.name)")
+            Text(device.name.isEmpty ? "device.edit.title.new" : String(format: NSLocalizedString("device.edit.title.existing", comment: "Title for editing an existing device"), device.name))
                 .font(.title2).fontWeight(.bold)
                 .padding()
 
             Form {
                 Section {
-                    TextField("Имя устройства:", text: $device.name)
-                    TextField("Хост (IP или домен):", text: $device.host)
-                    TextField("Пользователь SSH:", text: $device.user)
-                    Picker("Иконка устройства:", selection: $device.icon) {
+                    TextField("device.edit.field.name", text: $device.name)
+                    TextField("device.edit.field.host", text: $device.host)
+                    TextField("device.edit.field.user", text: $device.user)
+                    Picker("device.edit.field.icon", selection: $device.icon) {
                         ForEach(iconList, id: \.self) { iconName in
                             HStack { Image(systemName: iconName); Text(iconName.capitalized) }.tag(iconName)
                         }
                     }
                 } header: {
-                    Text("Основные параметры").font(.headline).padding(.bottom, 4)
+                    Text("device.edit.section.general").font(.headline).padding(.bottom, 4)
                 }
 
                 Section {
@@ -337,15 +338,15 @@ private struct DeviceEditView: View {
                     .listStyle(.inset(alternatesRowBackgrounds: true))
                     .frame(minHeight: 120, maxHeight: 240)
                 } header: {
-                    Text("Действия (SSH Команды)").font(.headline).padding(.bottom, 4)
+                    Text("device.edit.section.actions").font(.headline).padding(.bottom, 4)
                 } footer: {
                     HStack(spacing: 8) {
                         Button(action: addAction) { Image(systemName: "plus") }
-                            .help("Добавить новое действие")
+                            .help("help.action.add")
                         
                         Button(action: deleteSelectedAction) { Image(systemName: "minus") }
                             .disabled(selectedActionID == nil)
-                            .help("Удалить выбранное действие")
+                            .help("help.action.remove")
                         Spacer()
                     }
                     .padding(.top, 4)
@@ -356,9 +357,9 @@ private struct DeviceEditView: View {
             .textFieldStyle(.roundedBorder)
 
             HStack {
-                Button("Отмена", role: .cancel) { dismiss() }
+                Button("common.cancel", role: .cancel) { dismiss() }
                 Spacer()
-                Button("Сохранить") { onSave(device); dismiss() }.keyboardShortcut(.defaultAction)
+                Button("common.save") { onSave(device); dismiss() }.keyboardShortcut(.defaultAction)
             }
             .padding()
             .background(.bar)
@@ -409,25 +410,25 @@ private struct ActionEditView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Редактирование действия")
+            Text("action.edit.title")
                 .font(.title2).fontWeight(.bold)
             
             Form {
-                Section("Параметры") {
-                    TextField("Название кнопки:", text: $localAction.name)
-                    TextField("SSH Команда:", text: $localAction.command)
+                Section("action.edit.section.parameters") {
+                    TextField("action.edit.field.name", text: $localAction.name)
+                    TextField("action.edit.field.command", text: $localAction.command)
                         .font(.monospaced(.body)())
                 }
                 
-                Section("Отображение") {
-                    Picker("Иконка:", selection: $localAction.icon) {
+                Section("action.edit.section.display") {
+                    Picker("action.edit.field.icon", selection: $localAction.icon) {
                         ForEach(iconList, id: \.self) { iconName in
                             HStack { Image(systemName: iconName); Text(iconName) }.tag(iconName)
                         }
                     }
-                    Picker("Показывать кнопку:", selection: $localAction.displayCondition) {
+                    Picker("action.edit.field.condition", selection: $localAction.displayCondition) {
                         ForEach(CustomAction.DisplayCondition.allCases) { condition in
-                            Text(condition.rawValue).tag(condition)
+                            Text(condition.localizedString).tag(condition)
                         }
                     }
                 }
@@ -437,9 +438,9 @@ private struct ActionEditView: View {
             .textFieldStyle(.roundedBorder)
             
             HStack {
-                Button("Отмена", role: .cancel) { dismiss() }
+                Button("common.cancel", role: .cancel) { dismiss() }
                 Spacer()
-                Button("Сохранить") {
+                Button("common.save") {
                     onSave(localAction)
                     dismiss()
                 }.keyboardShortcut(.defaultAction)
@@ -453,8 +454,8 @@ private struct ActionEditView: View {
 
 // MARK: - Переиспользуемые компоненты
 private struct SettingsGroup<Content: View>: View {
-    let title: String; let icon: String; let content: Content
-    init(title: String, icon: String, @ViewBuilder content: () -> Content) { self.title = title; self.icon = icon; self.content = content() }
+    let title: LocalizedStringKey; let icon: String; let content: Content
+    init(title: LocalizedStringKey, icon: String, @ViewBuilder content: () -> Content) { self.title = title; self.icon = icon; self.content = content() }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) { Image(systemName: icon).font(.title3).foregroundColor(.accentColor).frame(width: 20); Text(title).font(.headline).fontWeight(.semibold) }.padding(.leading, 4)
@@ -464,8 +465,8 @@ private struct SettingsGroup<Content: View>: View {
 }
 
 private struct SettingsRow<Content: View>: View {
-    let title: String; let description: String; let content: Content
-    init(title: String, description: String, @ViewBuilder content: () -> Content) { self.title = title; self.description = description; self.content = content() }
+    let title: LocalizedStringKey; let description: LocalizedStringKey; let content: Content
+    init(title: LocalizedStringKey, description: LocalizedStringKey, @ViewBuilder content: () -> Content) { self.title = title; self.description = description; self.content = content() }
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) { Text(title).font(.body).fontWeight(.medium); Text(description).font(.caption).foregroundColor(.secondary).lineLimit(2) }.frame(maxWidth: .infinity, alignment: .leading)
@@ -474,14 +475,32 @@ private struct SettingsRow<Content: View>: View {
     }
 }
 
+// ИСПРАВЛЕНО: Структура ValidationField теперь принимает строковый 'key' для FocusState
 private struct ValidationField: View {
-    let title: String; @Binding var text: String; @FocusState.Binding var focusedField: String?
-    let isValid: Bool; let description: String; @State private var hasBeenEdited: Bool = false
+    let key: String
+    let title: LocalizedStringKey
+    @Binding var text: String
+    @FocusState.Binding var focusedField: String?
+    let isValid: Bool
+    let description: LocalizedStringKey
+    @State private var hasBeenEdited: Bool = false
+    
     var body: some View {
         SettingsRow(title: title, description: description) {
             HStack(spacing: 8) {
-                TextField("", text: $text).textFieldStyle(.roundedBorder).focused($focusedField, equals: title).frame(minWidth: 160).onChange(of: text) { _, _ in hasBeenEdited = true }.onAppear { if !text.isEmpty { hasBeenEdited = true } }
-                if hasBeenEdited { Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill").font(.caption).foregroundColor(isValid ? .green : .red).transition(.scale.animation(.spring())) }
+                TextField(title, text: $text)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($focusedField, equals: key)
+                    .frame(minWidth: 160)
+                    .onChange(of: text) { _, _ in hasBeenEdited = true }
+                    .onAppear { if !text.isEmpty { hasBeenEdited = true } }
+                
+                if hasBeenEdited {
+                    Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(isValid ? .green : .red)
+                        .transition(.scale.animation(.spring()))
+                }
             }
         }
     }
@@ -490,12 +509,22 @@ private struct ValidationField: View {
 private struct SshKeyPicker: View {
     @Binding var keyPath: String; let isValid: Bool; @State private var showEditSheet = false
     var body: some View {
-        SettingsRow(title: "Путь к SSH ключу", description: "Приватный ключ для авторизации на устройствах") {
+        SettingsRow(title: "settings.row.sshKey.title", description: "settings.row.sshKey.description") {
             HStack(spacing: 8) {
                 Text((keyPath as NSString).abbreviatingWithTildeInPath).lineLimit(1).truncationMode(.middle).padding(.horizontal, 8).padding(.vertical, 4).background(Color(NSColor.controlBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
-                Button("Изменить...") { showEditSheet = true }.controlSize(.regular)
+                Button("common.edit...") { showEditSheet = true }.controlSize(.regular)
                 Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill").foregroundColor(isValid ? .green : .red)
             }
         }.sheet(isPresented: $showEditSheet) { SshKeyEditView(keyPath: $keyPath) }
+    }
+}
+
+extension CustomAction.DisplayCondition {
+    var localizedString: LocalizedStringKey {
+        switch self {
+        case .always: return "condition.always"
+        case .ifOnline: return "condition.ifOnline"
+        case .ifOffline: return "condition.ifOffline"
+        }
     }
 }

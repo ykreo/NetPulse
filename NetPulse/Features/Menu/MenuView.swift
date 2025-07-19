@@ -11,27 +11,23 @@ struct MenuView: View {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.dismiss) private var dismiss
     
-    // --- ИСПРАВЛЕНО: Логика расчета высоты теперь более стабильна ---
     private var idealHeight: CGFloat {
         let headerHeight: CGFloat = 60
         let footerHeight: CGFloat = 50
         let internetCardHeight: CGFloat = 60
         let baseDeviceCardHeight: CGFloat = 60
-        let actionRowHeight: CGFloat = 45 // Высота ряда с кнопками
+        let actionRowHeight: CGFloat = 45
         let verticalPadding: CGFloat = 32
         let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1)
 
         let devicesHeight = settings.settings.devices.reduce(0) { total, device in
-            // Проверяем, есть ли у устройства вообще какие-либо действия.
-            // Это делает высоту независимой от текущего онлайн-статуса.
             let hasAnyActions = !device.actions.isEmpty
             let actionHeight = hasAnyActions ? actionRowHeight : 0
             return total + baseDeviceCardHeight + actionHeight
         }
         
-        // Считаем итоговую высоту
         if settings.settings.devices.isEmpty {
-            return 300 // Фиксированная высота для окна с предложением настроить
+            return 300
         }
         
         return headerHeight + footerHeight + internetCardHeight + devicesHeight + verticalPadding + spacing
@@ -94,8 +90,7 @@ struct MenuView: View {
     }
 }
 
-
-// MARK: - UI Components (без изменений в этой секции)
+// MARK: - UI Components
 
 private struct HeaderView: View {
     @EnvironmentObject var manager: NetworkManager
@@ -103,9 +98,9 @@ private struct HeaderView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("NetPulse").font(.title2).fontWeight(.semibold)
+                Text("NetPulse").font(.title2).fontWeight(.semibold) // Название приложения не локализуем
                 HStack(spacing: 4) {
-                    Text("by").font(.caption).foregroundColor(.secondary)
+                    Text("menu.author.by").font(.caption).foregroundColor(.secondary)
                     Text(settings.author).font(.caption).fontWeight(.medium).foregroundColor(.secondary)
                     Text("• v\(settings.appVersion)").font(.caption).foregroundColor(.secondary.opacity(0.7))
                 }
@@ -129,9 +124,11 @@ private struct StatusCard: View {
             HStack(spacing: 12) {
                 Image(systemName: device?.icon ?? "globe").font(.title2).foregroundColor(.secondary).frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(device?.name ?? "Интернет").font(.body).fontWeight(.medium)
+                    // Используем локализованную строку для Интернета
+                    Text(device?.name ?? String(localized: "device.internet")).font(.body).fontWeight(.medium)
                     HStack(spacing: 6) {
                         Circle().fill(status.displayColor).frame(width: 8, height: 8)
+                        // displayName уже локализован в модели DeviceStatus
                         Text(status.state.displayName).font(.caption).foregroundColor(.secondary)
                     }
                 }
@@ -188,6 +185,7 @@ private struct ActionButton: View {
         }) {
             HStack(spacing: 4) {
                 Image(systemName: action.icon)
+                // Имя действия задается пользователем, поэтому не локализуем
                 Text(action.name)
             }
             .font(.caption)
@@ -205,11 +203,19 @@ private struct FooterView: View {
     let onSettings: () -> Void
     var body: some View {
         HStack(spacing: 12) {
-            Button(action: onAbout) { Image(systemName: "info.circle") }.buttonStyle(.plain).help("О программе")
+            Button(action: onAbout) { Image(systemName: "info.circle") }
+                .buttonStyle(.plain)
+                .help("menu.footer.about.tooltip") // Локализованная подсказка
             Spacer()
             HStack(spacing: 8) {
-                Button("Выход") { NSApplication.shared.terminate(nil) }
-                Button(action: onSettings) { HStack(spacing: 4) { Image(systemName: "gearshape.fill"); Text("Настройки") } }.buttonStyle(.borderedProminent)
+                Button("menu.footer.quit") { NSApplication.shared.terminate(nil) }
+                Button(action: onSettings) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gearshape.fill")
+                        Text("menu.footer.settings")
+                    }
+                }
+                .buttonStyle(.borderedProminent)
             }.controlSize(.regular)
         }
     }
@@ -220,10 +226,15 @@ private struct UnconfiguredView: View {
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "gear.badge.questionmark").font(.system(size: 48)).foregroundColor(.secondary)
-            Text("Требуется настройка").font(.headline).fontWeight(.semibold)
-            Text("Пожалуйста, добавьте устройства и настройте SSH-ключи для начала мониторинга.").multilineTextAlignment(.center).foregroundColor(.secondary)
+            Text("menu.unconfigured.title").font(.headline).fontWeight(.semibold)
+            Text("menu.unconfigured.description").multilineTextAlignment(.center).foregroundColor(.secondary)
             Button(action: onSettings) {
-                HStack(spacing: 8) { Image(systemName: "gearshape.fill"); Text("Открыть настройки") }.frame(maxWidth: .infinity).frame(height: 36)
+                HStack(spacing: 8) {
+                    Image(systemName: "gearshape.fill")
+                    Text("menu.unconfigured.button")
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 36)
             }.buttonStyle(.borderedProminent).controlSize(.large)
         }
     }

@@ -6,6 +6,7 @@ struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Environment(\.openURL) private var openURL
     
+    // Этот URL не нужно локализовать.
     private let githubURL = URL(string: "https://github.com/ykreo/NetPulse")
     
     var body: some View {
@@ -26,7 +27,8 @@ struct AboutView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
-                    Text("Версия \(settingsManager.appVersion)")
+                    // Используем String(format:) для подстановки версии в локализованную строку
+                    Text(String(format: NSLocalizedString("about.version", comment: "Version label"), settingsManager.appVersion))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 12)
@@ -38,7 +40,7 @@ struct AboutView: View {
                 }
                 
                 // Описание
-                Text("Простая утилита для строки меню macOS для мониторинга и управления домашней сетью.")
+                Text("about.description")
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
@@ -47,10 +49,10 @@ struct AboutView: View {
                 
                 // Возможности
                 VStack(alignment: .leading, spacing: 8) {
-                    FeatureRow(icon: "wifi", title: "Мониторинг сети", description: "Отслеживание статуса роутера, компьютера и интернета")
-                    FeatureRow(icon: "terminal", title: "SSH управление", description: "Удаленное управление устройствами через SSH")
-                    FeatureRow(icon: "power", title: "Wake-on-LAN", description: "Удаленное включение компьютера")
-                    FeatureRow(icon: "bell", title: "Уведомления", description: "Автоматические уведомления об изменениях")
+                    FeatureRow(icon: "wifi", title: "feature.monitoring.title", description: "feature.monitoring.description")
+                    FeatureRow(icon: "terminal", title: "feature.ssh.title", description: "feature.ssh.description")
+                    FeatureRow(icon: "power", title: "feature.wol.title", description: "feature.wol.description")
+                    FeatureRow(icon: "bell", title: "feature.notifications.title", description: "feature.notifications.description")
                 }
                 .padding(.horizontal, 16)
                 
@@ -64,11 +66,10 @@ struct AboutView: View {
             VStack(spacing: 0) {
                             Divider().padding(.horizontal, 32)
                             
-                            // --- ИСПРАВЛЕНО: Добавлена информация о лицензии и авторстве ---
                             HStack(alignment: .center, spacing: 16) {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Copyright © 2025 \(settingsManager.author). Все права защищены.")
-                                    Text("Распространяется по лицензии MIT.")
+                                    Text(String(format: NSLocalizedString("about.copyright", comment: "Copyright notice"), settingsManager.author))
+                                    Text("about.license")
                                 }
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -79,14 +80,14 @@ struct AboutView: View {
                                     Button("GitHub") { openURL(url) }
                                         .buttonStyle(.borderedProminent)
                                         .controlSize(.small)
-                                        .help("Открыть репозиторий проекта")
+                                        .help("help.open.repository") // Добавляем локализованную подсказку
                                 }
                             }
                             .padding(.horizontal, 32).padding(.vertical, 16)
                         }
                         .background(Color(NSColor.windowBackgroundColor))
                     }
-                    .frame(minWidth: 480, minHeight: 480) // Сделаем окно чуть компактнее
+                    .frame(minWidth: 480, minHeight: 480)
                     .background(Color(NSColor.windowBackgroundColor))
                 }
             }
@@ -95,8 +96,8 @@ struct AboutView: View {
 
 private struct FeatureRow: View {
     let icon: String
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     
     var body: some View {
         HStack(spacing: 12) {
