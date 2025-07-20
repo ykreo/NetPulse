@@ -1,6 +1,3 @@
-// NetPulse/Features/Menu/MenuView.swift
-// Copyright © 2025 ykreo. All rights reserved.
-
 import SwiftUI
 
 struct MenuView: View {
@@ -11,75 +8,86 @@ struct MenuView: View {
     @Environment(\.openSettings) private var openSettings
     @Environment(\.dismiss) private var dismiss
     
+    // ИЗМЕНЕНИЕ: Мы снова вычисляем идеальную высоту, но делаем это точнее.
     private var idealHeight: CGFloat {
+        // Базовые высоты фиксированных элементов
         let headerHeight: CGFloat = 60
         let footerHeight: CGFloat = 50
-        let internetCardHeight: CGFloat = 60
-        let baseDeviceCardHeight: CGFloat = 60
-        let actionRowHeight: CGFloat = 45
-        let verticalPadding: CGFloat = 32
-        let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1)
+        
+        // Если не настроено, высота фиксирована
+        if !settings.settings.devices.isEmpty && settings.areAllFieldsValid {
+            // Высота карточки интернета
+            let internetCardHeight: CGFloat = 60
+            // Базовая высота карточки устройства
+            let baseDeviceCardHeight: CGFloat = 60
+            // Высота ряда с кнопками действий
+            let actionRowHeight: CGFloat = 45 // Примерная высота, может быть больше
+            // Отступы
+            let verticalPadding: CGFloat = 10 // Для списка, идеально выверенное значение
+            let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1)
 
-        let devicesHeight = settings.settings.devices.reduce(0) { total, device in
-            let hasAnyActions = !device.actions.isEmpty
-            let actionHeight = hasAnyActions ? actionRowHeight : 0
-            return total + baseDeviceCardHeight + actionHeight
+            // Считаем высоту всех карточек устройств с их действиями
+            let devicesHeight = settings.settings.devices.reduce(0) { total, device in
+                // Фильтруем видимые действия, чтобы расчет был точным
+                let isOnline = manager.deviceStatuses[device.id]?.state == .online
+                let visibleActions = device.actions.filter {
+                    switch $0.displayCondition {
+                    case .always: return true
+                    case .ifOnline: return isOnline
+                    case .ifOffline: return !isOnline
+                    }
+                }
+                
+                let actionHeight = !visibleActions.isEmpty ? actionRowHeight : 0
+                return total + baseDeviceCardHeight + actionHeight
+            }
+            
+            return headerHeight + footerHeight + internetCardHeight + devicesHeight + verticalPadding + spacing
+        } else {
+            return 300 // Фиксированная высота для заглушки
         }
-        
-        if settings.settings.devices.isEmpty {
-            return 300
-        }
-        
-        return headerHeight + footerHeight + internetCardHeight + devicesHeight + verticalPadding + spacing
     }
     
+    // Максимальная высота - 80% от видимой части экрана
     private var maxHeight: CGFloat {
         (NSScreen.main?.visibleFrame.height ?? 800) * 0.8
     }
 
     var body: some View {
-        let content = VStack(spacing: 0) {
+        // Вся логика теперь в основном VStack
+        VStack(spacing: 0) {
             if !settings.settings.devices.isEmpty && settings.areAllFieldsValid {
-                mainInterface
+                // Фиксированный хедер
+                HeaderView()
+                    .padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 12)
+                
+                Divider().padding(.horizontal, 12)
+
+                // Прокручиваемый контент
+                ScrollView {
+                    VStack(spacing: 8) {
+                        StatusCard(device: nil, status: manager.internetStatus, isLoading: manager.isUpdating)
+                        ForEach(settings.settings.devices) { device in
+                            StatusCard(
+                                device: device,
+                                status: manager.deviceStatuses[device.id] ?? DeviceStatus(state: .unknown),
+                                isLoading: manager.isUpdating || (manager.commandStates[device.id] ?? false)
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 16)
+                }
             } else {
+                // Заглушка, если не настроено
                 UnconfiguredView {
                     openSettings()
                     dismiss()
                 }
                 .padding(.horizontal, 20).padding(.vertical, 24)
+                Spacer() // Центрируем заглушку
             }
-            footer
-        }
-
-        if idealHeight > maxHeight {
-            ScrollView { content }.frame(width: 340, height: maxHeight)
-        } else {
-            content.frame(width: 340, height: idealHeight)
-        }
-    }
-    
-    // MARK: - Subviews
-    
-    private var mainInterface: some View {
-        VStack(spacing: 0) {
-            HeaderView().padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 12)
-            Divider().padding(.horizontal, 12)
-            VStack(spacing: 8) {
-                StatusCard(device: nil, status: manager.internetStatus, isLoading: manager.isUpdating)
-                ForEach(settings.settings.devices) { device in
-                    StatusCard(
-                        device: device,
-                        status: manager.deviceStatuses[device.id] ?? DeviceStatus(state: .unknown),
-                        isLoading: manager.isUpdating || (manager.commandStates[device.id] ?? false)
-                    )
-                }
-            }
-            .padding(.horizontal, 16).padding(.vertical, 16)
-        }
-    }
-    
-    private var footer: some View {
-        VStack(spacing: 0) {
+            
+            // Фиксированный футер
             Divider().padding(.horizontal, 12)
             FooterView(
                 onAbout: { openWindow(id: "about"); dismiss() },
@@ -87,10 +95,15 @@ struct MenuView: View {
             )
             .padding(.horizontal, 16).padding(.vertical, 12)
         }
+        // ИЗМЕНЕНИЕ: Применяем вычисленную высоту
+        .frame(width: 340, height: min(idealHeight, maxHeight))
+        .onAppear { manager.startFastUpdates() }
+        .onDisappear { manager.stopFastUpdates() }
     }
 }
 
 // MARK: - UI Components
+// Остальные компоненты остаются без изменений
 
 private struct HeaderView: View {
     @EnvironmentObject var manager: NetworkManager
@@ -98,7 +111,7 @@ private struct HeaderView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("NetPulse").font(.title2).fontWeight(.semibold) // Название приложения не локализуем
+                Text("NetPulse").font(.title2).fontWeight(.semibold)
                 HStack(spacing: 4) {
                     Text("menu.author.by").font(.caption).foregroundColor(.secondary)
                     Text(settings.author).font(.caption).fontWeight(.medium).foregroundColor(.secondary)
@@ -124,11 +137,9 @@ private struct StatusCard: View {
             HStack(spacing: 12) {
                 Image(systemName: device?.icon ?? "globe").font(.title2).foregroundColor(.secondary).frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
-                    // Используем локализованную строку для Интернета
                     Text(device?.name ?? String(localized: "device.internet")).font(.body).fontWeight(.medium)
                     HStack(spacing: 6) {
                         Circle().fill(status.displayColor).frame(width: 8, height: 8)
-                        // displayName уже локализован в модели DeviceStatus
                         Text(status.state.displayName).font(.caption).foregroundColor(.secondary)
                     }
                 }
@@ -164,12 +175,13 @@ private struct StatusCard: View {
         
         if !visibleActions.isEmpty {
             Divider()
+            // Эту часть можно будет улучшить для адаптивности, как мы обсуждали
             HStack(spacing: 8) {
                 ForEach(visibleActions) { action in
                     ActionButton(action: action, device: device)
+                        .disabled(commandInProgress)
                 }
             }
-            .disabled(commandInProgress)
         }
     }
 }
@@ -185,7 +197,6 @@ private struct ActionButton: View {
         }) {
             HStack(spacing: 4) {
                 Image(systemName: action.icon)
-                // Имя действия задается пользователем, поэтому не локализуем
                 Text(action.name)
             }
             .font(.caption)
@@ -205,7 +216,7 @@ private struct FooterView: View {
         HStack(spacing: 12) {
             Button(action: onAbout) { Image(systemName: "info.circle") }
                 .buttonStyle(.plain)
-                .help("menu.footer.about.tooltip") // Локализованная подсказка
+                .help("menu.footer.about.tooltip")
             Spacer()
             HStack(spacing: 8) {
                 Button("menu.footer.quit") { NSApplication.shared.terminate(nil) }

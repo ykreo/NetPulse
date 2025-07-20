@@ -38,6 +38,14 @@ final class NetworkManager: ObservableObject {
     }
     
     // MARK: - Public API
+    
+    func startFastUpdates() {
+        setUpdateFrequency(isFast: true)
+    }
+    
+    func stopFastUpdates() {
+        setUpdateFrequency(isFast: false)
+    }
        
     func setUpdateFrequency(isFast: Bool) {
         updateTask?.cancel()
@@ -106,11 +114,9 @@ final class NetworkManager: ObservableObject {
     func executeCommand(for device: Device, command: String?) {
         guard let commandToExecute = command, !commandToExecute.isEmpty else { return }
 
-        // По умолчанию используем данные текущего устройства
         var targetHost = device.host
         var targetUser = device.user
 
-        // Специальная логика для Wake-on-LAN: команда должна выполняться на роутере
         if commandToExecute.contains("etherwake") {
             if let router = settingsManager.settings.devices.first(where: { $0.icon == "wifi.router" }) {
                 targetHost = router.host
@@ -128,10 +134,11 @@ final class NetworkManager: ObservableObject {
             do {
                 let output = try await ssh(user: targetUser, host: targetHost, command: commandToExecute)
                 let successMessage = output.isEmpty ? String(localized: "notification.command.success.body.empty") : output
-                sendNotification(title: "✅ \(device.name)", body: successMessage)
+                sendNotification(title: "✅ \(device.name)", subtitle: successMessage, body: "")
             } catch {
                 Logger.network.error("Ошибка выполнения команды для '\(device.name)': \(error.localizedDescription)")
-                sendNotification(title: "❌ \(device.name)", body: error.localizedDescription)
+                // ИЗМЕНЕНИЕ: Добавлен недостающий аргумент 'subtitle'
+                sendNotification(title: "❌ \(device.name)", subtitle: "Ошибка выполнения команды", body: error.localizedDescription)
             }
         }
     }
@@ -153,25 +160,43 @@ final class NetworkManager: ObservableObject {
     // MARK: - Private Helper Methods
     
     private func updateMenuBarIconState() {
-        if !settingsManager.areAllFieldsValid {
-            menuBarIconState = ("exclamationmark.triangle.fill", .orange)
-        } else {
-            let statuses = deviceStatuses.values
-            if statuses.isEmpty {
-                menuBarIconState = ("questionmark.circle.fill", .secondary)
+            // --- НАЧАЛО ДИАГНОСТИЧЕСКОГО БЛОКА ---
+            Logger.app.debug("--- Обновление иконки ---")
+            
+            let isValid = settingsManager.areAllFieldsValid
+            Logger.app.debug("Настройки валидны: \(isValid)")
+            
+            if !isValid {
+                menuBarIconState = ("exclamationmark.triangle.fill", .orange)
+                Logger.app.debug("Результат: Оранжевая иконка (невалидные настройки)")
             } else {
-                let onlineCount = statuses.filter { $0.state == .online }.count
-                if onlineCount == statuses.count {
-                    menuBarIconState = ("circle.fill", .green)
-                } else if onlineCount > 0 {
-                    menuBarIconState = ("circle.fill", .orange)
+                let statuses = deviceStatuses.values
+                Logger.app.debug("Количество статусов: \(statuses.count)")
+                
+                if statuses.isEmpty || statuses.allSatisfy({ $0.state == .unknown }) {
+                    menuBarIconState = ("questionmark.circle.fill", .secondary)
+                    Logger.app.debug("Результат: Серая иконка (статусы неизвестны или отсутствуют)")
                 } else {
-                    menuBarIconState = ("circle.fill", .red)
+                    let onlineCount = statuses.filter { $0.state == .online }.count
+                    let offlineCount = statuses.filter { $0.state == .offline }.count
+                    Logger.app.debug("Статусы: \(onlineCount) онлайн, \(offlineCount) офлайн")
+                    
+                    if onlineCount == statuses.count {
+                        menuBarIconState = ("circle.fill", .green)
+                        Logger.app.debug("Результат: Зеленая иконка (все онлайн)")
+                    } else if onlineCount > 0 {
+                        menuBarIconState = ("circle.fill", .orange)
+                        Logger.app.debug("Результат: Оранжевая иконка (частично онлайн)")
+                    } else {
+                        menuBarIconState = ("circle.fill", .red)
+                        Logger.app.debug("Результат: Красная иконка (все офлайн)")
+                    }
                 }
             }
+            // --- КОНЕЦ ДИАГНОСТИЧЕСКОГО БЛОКА ---
+            
+            iconUpdateId = UUID()
         }
-        iconUpdateId = UUID()
-    }
     
     private func initializeStatuses() {
         var freshStatuses: [UUID: DeviceStatus] = [:]
@@ -188,24 +213,34 @@ final class NetworkManager: ObservableObject {
     private func checkAndNotify(device: Device?, old: DeviceStatus.State, new: DeviceStatus.State) {
         guard old != .unknown, new != .unknown, old != new else { return }
         
-        let deviceName = device?.name ?? String(localized: "device.internet")
-        let title = String(format: NSLocalizedString("notification.status_change.title", comment: "Status change title"), deviceName)
-        let body = new == .online ? String(localized: "notification.status_change.body.online") : String(localized: "notification.status_change.body.offline")
-        sendNotification(title: title, body: body)
+        let title: String
+        let subtitle: String
+        
+        if let device = device {
+            title = device.name
+            subtitle = new == .online ? "✅ \(String(localized: "status.online"))" : "❌ \(String(localized: "status.offline"))"
+        } else {
+            title = String(localized: "device.internet")
+            subtitle = new == .online ? "✅ \(String(localized: "status.online"))" : "❌ \(String(localized: "status.offline"))"
+        }
+
+        sendNotification(title: title, subtitle: subtitle, body: "")
     }
     
     private func requestNotificationPermission() async {
         let center = UNUserNotificationCenter.current()
-        do {
-            try await center.requestAuthorization(options: [.alert, .sound, .badge])
-        } catch {
-            Logger.app.warning("Не удалось получить разрешение на уведомления: \(error.localizedDescription)")
+        let granted = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+        if granted == true {
+            Logger.app.info("Разрешение на уведомления получено.")
+        } else {
+            Logger.app.warning("Пользователь отклонил запрос на уведомления.")
         }
     }
     
-    private func sendNotification(title: String, body: String) {
+    private func sendNotification(title: String, subtitle: String, body: String) {
         let content = UNMutableNotificationContent()
         content.title = title
+        content.subtitle = subtitle
         content.body = body
         content.sound = .default
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
@@ -244,7 +279,6 @@ final class NetworkManager: ObservableObject {
     
     private func ping(host: String) async -> Double? {
         guard !host.isEmpty else { return nil }
-        // -c 1: одна попытка, -W 2000: таймаут 2000 мс
         let result = await runProcess(executableURL: URL(fileURLWithPath: "/sbin/ping"), arguments: ["-c", "1", "-W", "2000", host])
         
         guard result.exitCode == 0,
@@ -276,4 +310,4 @@ final class NetworkManager: ObservableObject {
             throw NSError(domain: "SSH Error", code: Int(result.exitCode), userInfo: [NSLocalizedDescriptionKey: errorDescription])
         }
     }
-} // <- Вот правильная закрывающая скобка для всего класса
+}

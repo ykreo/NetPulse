@@ -17,8 +17,10 @@ struct SettingsView: View {
     @State private var editingDevice: Device?
     @State private var isCreatingNewDevice = false
     
+    @State private var showLaunchCtlError = false
+    @State private var launchCtlErrorText = ""
+    
     init() {
-        // ИСПРАВЛЕНИЕ: Убрали лишнее создание SettingsManager. Теперь используется только EnvironmentObject.
         _localSettings = State(initialValue: AppSettings.defaultSettings())
     }
     
@@ -30,31 +32,32 @@ struct SettingsView: View {
                 GeneralSettingsTab(localSettings: $localSettings)
                     .tabItem { Label("settings.tab.general", systemImage: "gear") }
 
-                DevicesSettingsTab(
-                    localSettings: $localSettings,
-                    onEdit: { device in self.editingDevice = device },
-                    onCreate: { self.isCreatingNewDevice = true }
-                )
+                ScrollView {
+                    DevicesSettingsTab(
+                        localSettings: $localSettings,
+                        onEdit: { device in self.editingDevice = device },
+                        onCreate: { self.isCreatingNewDevice = true }
+                    )
+                    .padding(32)
+                }
                 .tabItem { Label("settings.tab.devices", systemImage: "server.rack") }
+                NotificationsSettingsTab(localSettings: $localSettings)
+                    .tabItem { Label("settings.tab.notifications", systemImage: "bell.badge") }
             }
             .frame(minWidth: 700, minHeight: 520)
             footer
         }
         .onAppear {
-            // При появлении окна синхронизируем локальное состояние с реальными настройками.
             localSettings = settingsManager.settings
         }
         .onChange(of: localSettings) { _, newSettings in
             settingsManager.applyForValidation(newSettings)
         }
-        .onChange(of: localSettings.hideDockIcon) { _, newHideDockIcon in
-            if newHideDockIcon != settingsManager.settings.hideDockIcon {
-                showRestartAlert = true
-            }
-        }
         .alert("alert.restart.title", isPresented: $showRestartAlert) {
-            Button("alert.restart.button.restart") { restartApp() }
-            Button("alert.restart.button.later", role: .cancel) {}
+            Button("alert.restart.button.restart") { saveChanges(andRestart: true) }
+            Button("alert.restart.button.later", role: .cancel) {
+                saveChanges()
+            }
         } message: {
             Text("alert.restart.message")
         }
@@ -70,9 +73,12 @@ struct SettingsView: View {
                 }
             }
         }
+        .alert("Ошибка автозапуска", isPresented: $showLaunchCtlError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(launchCtlErrorText)
+        }
     }
-    
-    // MARK: - Subviews
     
     private var header: some View {
         VStack(spacing: 8) {
@@ -89,8 +95,11 @@ struct SettingsView: View {
                 Spacer()
                 Button("common.cancel", role: .cancel) { dismiss() }.buttonStyle(.bordered).controlSize(.large)
                 Button("common.save") {
-                    saveChanges()
-                    dismiss()
+                    if localSettings.hideDockIcon != settingsManager.settings.hideDockIcon {
+                        showRestartAlert = true
+                    } else {
+                        saveChanges()
+                    }
                 }
                 .buttonStyle(.borderedProminent).controlSize(.large)
                 .disabled(!settingsManager.areAllFieldsValid)
@@ -100,22 +109,25 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Helper Functions
-    
-    private func saveChanges() {
+    private func saveChanges(andRestart restart: Bool = false) {
         if localSettings.launchAtLogin != settingsManager.settings.launchAtLogin {
             handleLaunchAtLoginChange(to: localSettings.launchAtLogin)
         }
         settingsManager.applyAndSave(localSettings)
         (NSApp.delegate as? AppDelegate)?.updateActivationPolicy()
         networkManager.setUpdateFrequency(isFast: false)
-        if showRestartAlert { restartApp() }
+        if restart { restartApp() } else { dismiss() }
     }
     
     private func handleLaunchAtLoginChange(to newValue: Bool) {
         do {
             if newValue { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-        } catch { Logger.app.error("Ошибка изменения статуса автозапуска: \(error.localizedDescription)") }
+            Logger.app.info("Статус автозапуска успешно изменен на \(newValue).")
+        } catch {
+            Logger.app.error("Ошибка изменения статуса автозапуска: \(error.localizedDescription)")
+            launchCtlErrorText = "Не удалось изменить статус автозапуска. Пожалуйста, проверьте разрешения или попробуйте снова.\n\nОшибка: \(error.localizedDescription)"
+            showLaunchCtlError = true
+        }
     }
     
     private func restartApp() {
@@ -126,6 +138,7 @@ struct SettingsView: View {
     }
 }
 
+// ... (Остальной код файла остается без изменений, я привожу его для полноты)
 
 // MARK: - Вкладка "Устройства"
 private struct DevicesSettingsTab: View {
@@ -136,27 +149,32 @@ private struct DevicesSettingsTab: View {
     @State private var selection: Device.ID?
 
     var body: some View {
-        VStack(spacing: 0) {
-            List(selection: $selection) {
-                ForEach($localSettings.devices) { $device in
-                    DeviceRowView(device: $device, onEdit: { onEdit(device) })
-                        .tag(device.id)
+        SettingsGroup(title: "settings.tab.devices", icon: "server.rack") {
+            VStack(spacing: 0) {
+                List(selection: $selection) {
+                    ForEach($localSettings.devices) { $device in
+                        DeviceRowView(device: $device, onEdit: { onEdit(device) })
+                            .tag(device.id)
+                    }
+                    .onMove(perform: moveDevice)
                 }
-                .onMove(perform: moveDevice)
-            }
-            .listStyle(.inset(alternatesRowBackgrounds: true))
+                .listStyle(.inset(alternatesRowBackgrounds: true))
+                .frame(minHeight: 300)
 
-            HStack {
-                Button(action: onCreate) { Image(systemName: "plus") }
-                    .help("help.device.add")
-                
-                Button(action: deleteSelectedDevice) { Image(systemName: "minus") }
-                    .disabled(selection == nil)
-                    .help("help.device.remove")
-                
-                Spacer()
+                HStack {
+                    Button(action: onCreate) { Image(systemName: "plus") }
+                        .help("help.device.add")
+                    
+                    Button(action: deleteSelectedDevice) { Image(systemName: "minus") }
+                        .disabled(selection == nil)
+                        .help("help.device.remove")
+                    
+                    Spacer()
+                }
+                .padding([.horizontal, .bottom], 12)
+                .padding(.top, 8)
+                .background(Color(NSColor.windowBackgroundColor).opacity(0.001))
             }
-            .padding(12)
         }
     }
     
@@ -260,7 +278,6 @@ private struct GeneralSettingsTab: View {
                 SettingsGroup(title: "settings.group.network", icon: "globe") {
                     VStack(spacing: 16) {
                         SshKeyPicker(keyPath: $localSettings.sshKeyPath, isValid: settingsManager.isSshKeyPathValid)
-                        // ИСПРАВЛЕНО: Теперь мы передаем строковый ключ для FocusState
                         ValidationField(key: "checkHost", title: "settings.field.checkHost.title", text: $localSettings.checkHost, focusedField: $focusedField, isValid: settingsManager.isCheckHostValid, description: "settings.field.checkHost.description")
                     }
                 }
@@ -283,6 +300,38 @@ private struct GeneralSettingsTab: View {
         }
     }
 }
+// MARK: - НОВАЯ ВКЛАДКА "Уведомления"
+private struct NotificationsSettingsTab: View {
+    @Binding var localSettings: AppSettings
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                SettingsGroup(title: "settings.group.notifications_main", icon: "app.badge") {
+                    VStack(spacing: 16) {
+                        // Эта настройка пока не добавлена в модель, но как заготовка для будущего
+                        // SettingsRow(title: "settings.row.enableNotifications.title", description: "settings.row.enableNotifications.description") {
+                        //     Toggle("", isOn: .constant(true)).labelsHidden()
+                        // }
+                        
+                        SettingsRow(title: "settings.row.notification_info.title", description: "settings.row.notification_info.description") {
+                            Button("settings.button.open_sys_settings") {
+                                // Открываем системные настройки уведомлений для нашего приложения
+                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Здесь в будущем можно добавить детальные настройки для каждого типа уведомлений
+                
+            }
+            .padding(.horizontal, 32).padding(.vertical, 24)
+        }
+    }
+}
 
 
 // MARK: - Модальное окно редактирования УСТРОЙСТВА
@@ -298,9 +347,15 @@ private struct DeviceEditView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(device.name.isEmpty ? "device.edit.title.new" : String(format: NSLocalizedString("device.edit.title.existing", comment: "Title for editing an existing device"), device.name))
-                .font(.title2).fontWeight(.bold)
-                .padding()
+            Group {
+                            if device.name.isEmpty {
+                                Text("device.edit.title.new")
+                            } else {
+                                Text(String(format: NSLocalizedString("device.edit.title.existing", comment: "Title for editing an existing device"), device.name))
+                            }
+                        }
+                        .font(.title2).fontWeight(.bold)
+                        .padding()
 
             Form {
                 Section {
@@ -325,12 +380,11 @@ private struct DeviceEditView: View {
                                     Text(action.name).fontWeight(.medium)
                                     Text(action.command).font(.monospaced(.caption)()).foregroundColor(.secondary).lineLimit(1)
                                 }
+                                Spacer()
+                                Button("common.edit") { editingAction = action }.buttonStyle(.bordered)
                             }
                             .tag(action.id)
                             .contentShape(Rectangle())
-                            .onTapGesture(count: 2) {
-                                editingAction = action
-                            }
                         }
                         .onMove(perform: moveAction)
                         .onDelete(perform: deleteAction)
@@ -475,7 +529,6 @@ private struct SettingsRow<Content: View>: View {
     }
 }
 
-// ИСПРАВЛЕНО: Структура ValidationField теперь принимает строковый 'key' для FocusState
 private struct ValidationField: View {
     let key: String
     let title: LocalizedStringKey

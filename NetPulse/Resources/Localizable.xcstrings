@@ -27,6 +27,22 @@
     "~/.ssh/id_rsa" : {
       "shouldTranslate" : false
     },
+    "about.button.checkUpdates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check updates…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить обновления…"
+          }
+        }
+      }
+    },
     "about.copyright" : {
       "comment" : "Copyright notice",
       "localizations" : {
@@ -1044,6 +1060,7 @@
       }
     },
     "notification.status_change.body.offline" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1060,6 +1077,7 @@
       }
     },
     "notification.status_change.body.online" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1077,6 +1095,7 @@
     },
     "notification.status_change.title" : {
       "comment" : "Status change title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1091,6 +1110,9 @@
           }
         }
       }
+    },
+    "OK" : {
+
     },
     "settings.button.checkNow" : {
       "localizations" : {
@@ -1136,6 +1158,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Импорт..."
+          }
+        }
+      }
+    },
+    "settings.button.open_sys_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open system settings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть системные настройки"
           }
         }
       }
@@ -1232,6 +1270,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Общие параметры сети"
+          }
+        }
+      }
+    },
+    "settings.group.notifications_main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Уведомления"
           }
         }
       }
@@ -1508,6 +1562,38 @@
         }
       }
     },
+    "settings.row.notification_info.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show NetPulse notifications in macOS."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показывать уведомления от NetPulse в macOS"
+          }
+        }
+      }
+    },
+    "settings.row.notification_info.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open system notification settings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть системные настройки уведомлений"
+          }
+        }
+      }
+    },
     "settings.row.reset.description" : {
       "localizations" : {
         "en" : {
@@ -1600,6 +1686,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Общие"
+          }
+        }
+      }
+    },
+    "settings.tab.notifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уведомления"
           }
         }
       }
@@ -1843,6 +1945,9 @@
           }
         }
       }
+    },
+    "Ошибка автозапуска" : {
+
     }
   },
   "version" : "1.0"

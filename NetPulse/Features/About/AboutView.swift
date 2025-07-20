@@ -4,7 +4,9 @@ import SwiftUI
 
 struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @EnvironmentObject var updateManager: UpdateManager
     @Environment(\.openURL) private var openURL
+    @State private var isCheckingForUpdates = false
     
     // Этот URL не нужно локализовать.
     private let githubURL = URL(string: "https://github.com/ykreo/NetPulse")
@@ -64,33 +66,50 @@ struct AboutView: View {
             
             // Футер
             VStack(spacing: 0) {
-                            Divider().padding(.horizontal, 32)
-                            
-                            HStack(alignment: .center, spacing: 16) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(String(format: NSLocalizedString("about.copyright", comment: "Copyright notice"), settingsManager.author))
-                                    Text("about.license")
-                                }
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                
-                                Spacer()
-                                
-                                if let url = githubURL {
-                                    Button("GitHub") { openURL(url) }
-                                        .buttonStyle(.borderedProminent)
-                                        .controlSize(.small)
-                                        .help("help.open.repository") // Добавляем локализованную подсказку
-                                }
-                            }
-                            .padding(.horizontal, 32).padding(.vertical, 16)
-                        }
-                        .background(Color(NSColor.windowBackgroundColor))
-                    }
-                    .frame(minWidth: 480, minHeight: 480)
-                    .background(Color(NSColor.windowBackgroundColor))
-                }
-            }
+                           Divider().padding(.horizontal, 32)
+                           
+                           HStack(alignment: .center, spacing: 16) {
+                               VStack(alignment: .leading, spacing: 4) {
+                                   Text(String(format: NSLocalizedString("about.copyright", comment: "Copyright notice"), settingsManager.author))
+                                   Text("about.license")
+                               }
+                               .font(.caption)
+                               .foregroundColor(.secondary)
+                               
+                               Spacer()
+                               
+                               // ИЗМЕНЕНИЕ: Добавляем кнопку проверки обновлений
+                               HStack {
+                                   Button(action: {
+                                       Task {
+                                           isCheckingForUpdates = true
+                                           await updateManager.checkForUpdates(silently: false)
+                                           isCheckingForUpdates = false
+                                       }
+                                   }) {
+                                       HStack {
+                                           if isCheckingForUpdates { ProgressView().controlSize(.small) }
+                                           Text("about.button.checkUpdates")
+                                       }
+                                   }
+                                   .disabled(isCheckingForUpdates)
+                                   
+                                   if let url = githubURL {
+                                       Button("GitHub") { openURL(url) }
+                                           .help("help.open.repository")
+                                   }
+                               }
+                               .buttonStyle(.bordered) // Общий стиль для кнопок
+                               .controlSize(.small)
+                           }
+                           .padding(.horizontal, 32).padding(.vertical, 16)
+                       }
+                       .background(Color(NSColor.windowBackgroundColor))
+                   }
+                   .frame(minWidth: 480, minHeight: 480)
+                   .background(Color(NSColor.windowBackgroundColor))
+               }
+           }
 
 // MARK: - Subviews
 

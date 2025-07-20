@@ -3,32 +3,53 @@
 
 import SwiftUI
 
+// --- НАЧАЛО НОВОГО КОДА ---
+
+/// Создает цветную иконку SF Symbol с помощью AppKit, чтобы обойти принудительный "шаблонный" рендеринг в MenuBarExtra.
+/// - Parameters:
+///   - systemName: Имя SF Symbol.
+///   - color: Цвет иконки.
+/// - Returns: Готовое изображение для SwiftUI.
+private func createColoredIcon(systemName: String, color: Color) -> Image {
+    // 1. Получаем системное изображение (NSImage) из имени SF Symbol.
+    guard let nsImage = NSImage(systemSymbolName: systemName, accessibilityDescription: nil) else {
+        return Image(systemName: systemName) // Возвращаем обычную иконку, если что-то пошло не так
+    }
+
+    // 2. Создаем конфигурацию, которая применяет наш цвет.
+    let configuration = NSImage.SymbolConfiguration(paletteColors: [NSColor(color)])
+    
+    // 3. Применяем конфигурацию к изображению.
+    let coloredImage = nsImage.withSymbolConfiguration(configuration)
+    
+    // 4. ЭТО КЛЮЧЕВОЙ ШАГ: Явно говорим системе, что это НЕ шаблон.
+    coloredImage?.isTemplate = false
+    
+    // 5. Возвращаем сконфигурированное изображение обратно в SwiftUI.
+    return Image(nsImage: coloredImage ?? nsImage)
+}
+
+// --- КОНЕЦ НОВОГО КОДА ---
+
+
 /// Корневая структура приложения, определяющая основную сцену.
 @main
 struct NetPulseApp: App {
-    // Адаптер для подключения AppDelegate к жизненному циклу SwiftUI.
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     
-    // Менеджеры состояния, инициализируются один раз и передаются в дочерние View.
     @StateObject private var settingsManager: SettingsManager
     @StateObject private var networkManager: NetworkManager
-    // ИЗМЕНЕНО: Добавляем UpdateManager как StateObject, чтобы он тоже был доступен.
     @StateObject private var updateManager: UpdateManager
     
     init() {
-        // Создаем экземпляры менеджеров в правильном порядке.
         let settings = SettingsManager()
         let network = NetworkManager(settingsManager: settings)
-        // Инициализируем UpdateManager здесь, он становится частью графа зависимостей.
         let updater = UpdateManager()
 
-        // Инициализируем StateObject с созданными экземплярами.
         _settingsManager = StateObject(wrappedValue: settings)
         _networkManager = StateObject(wrappedValue: network)
         _updateManager = StateObject(wrappedValue: updater)
         
-        // ИЗМЕНЕНО: Сразу после создания передаем ссылки в AppDelegate.
-        // Это устраняет гонку состояний.
         appDelegate.setup(
             settingsManager: settings,
             networkManager: network,
@@ -37,38 +58,27 @@ struct NetPulseApp: App {
     }
 
     var body: some Scene {
-        // Основной элемент в строке меню.
         MenuBarExtra {
             MenuView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
-                // Передавать менеджеры через .onAppear больше не нужно,
-                // так как мы сделали это в init(), но оставим для совместимости
-                // с вашим текущим кодом, если где-то это еще используется.
-                .onAppear {
-                    appDelegate.settingsManager = settingsManager
-                    appDelegate.networkManager = networkManager
-                    appDelegate.updateManager = updateManager
-                }
         } label: {
             MenuBarIconView(networkManager: networkManager)
                 .id(networkManager.iconUpdateId)
         }
         .menuBarExtraStyle(.window)
 
-        // Окно настроек, стандартное для macOS.
         Settings {
             SettingsView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
-                // ИЗМЕНЕНО: Передаем updateManager и в настройки.
                 .environmentObject(updateManager)
         }
         
-        // Кастомное окно "О программе".
         Window("window.title.about", id: "about") {
             AboutView()
                 .environmentObject(settingsManager)
+                .environmentObject(updateManager)
         }
         .windowResizability(.contentSize)
         .windowStyle(.hiddenTitleBar)
@@ -82,10 +92,8 @@ private struct MenuBarIconView: View {
     var body: some View {
         let iconInfo = networkManager.menuBarIconState
         
-        Image(systemName: iconInfo.name)
-            .font(.title3)
-            .foregroundColor(iconInfo.color)
-            // Добавляем эффект пульсации во время обновления.
-            .symbolEffect(.pulse, options: .repeating, isActive: networkManager.isUpdating)
+        // ИЗМЕНЕНИЕ: Теперь мы не создаем Image напрямую, а вызываем нашу новую функцию.
+        // Она возвращает уже готовую, правильно сконфигурированную цветную иконку.
+        createColoredIcon(systemName: iconInfo.name, color: iconInfo.color)
     }
 }
