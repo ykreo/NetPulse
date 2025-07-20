@@ -4,7 +4,12 @@ import SwiftUI
 
 struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
+    @EnvironmentObject var updateManager: UpdateManager
     @Environment(\.openURL) private var openURL
+    @State private var isCheckingForUpdates = false
+    
+    // Этот URL не нужно локализовать.
+    private let githubURL = URL(string: "https://github.com/ykreo/NetPulse")
     
     var body: some View {
         VStack(spacing: 0) {
@@ -24,7 +29,8 @@ struct AboutView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
-                    Text("Версия \(settingsManager.appVersion)")
+                    // Используем String(format:) для подстановки версии в локализованную строку
+                    Text(String(format: NSLocalizedString("about.version", comment: "Version label"), settingsManager.appVersion))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 12)
@@ -36,7 +42,7 @@ struct AboutView: View {
                 }
                 
                 // Описание
-                Text("Простая утилита для строки меню macOS для мониторинга и управления домашней сетью.")
+                Text("about.description")
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
@@ -45,10 +51,10 @@ struct AboutView: View {
                 
                 // Возможности
                 VStack(alignment: .leading, spacing: 8) {
-                    FeatureRow(icon: "wifi", title: "Мониторинг сети", description: "Отслеживание статуса роутера, компьютера и интернета")
-                    FeatureRow(icon: "terminal", title: "SSH управление", description: "Удаленное управление устройствами через SSH")
-                    FeatureRow(icon: "power", title: "Wake-on-LAN", description: "Удаленное включение компьютера")
-                    FeatureRow(icon: "bell", title: "Уведомления", description: "Автоматические уведомления об изменениях")
+                    FeatureRow(icon: "wifi", title: "feature.monitoring.title", description: "feature.monitoring.description")
+                    FeatureRow(icon: "terminal", title: "feature.ssh.title", description: "feature.ssh.description")
+                    FeatureRow(icon: "power", title: "feature.wol.title", description: "feature.wol.description")
+                    FeatureRow(icon: "bell", title: "feature.notifications.title", description: "feature.notifications.description")
                 }
                 .padding(.horizontal, 16)
                 
@@ -60,40 +66,57 @@ struct AboutView: View {
             
             // Футер
             VStack(spacing: 0) {
-                Divider()
-                    .padding(.horizontal, 32)
-                
-                HStack(spacing: 16) {
-                    Text("Copyright © 2025 \(settingsManager.author). All rights reserved.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Button("GitHub") {
-                        if let url = URL(string: "https://github.com/ykreo") {
-                            openURL(url)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                }
-                .padding(.horizontal, 32)
-                .padding(.vertical, 16)
-            }
-            .background(Color(NSColor.windowBackgroundColor))
-        }
-        .frame(minWidth: 480, minHeight: 520)
-        .background(Color(NSColor.windowBackgroundColor))
-    }
-}
+                           Divider().padding(.horizontal, 32)
+                           
+                           HStack(alignment: .center, spacing: 16) {
+                               VStack(alignment: .leading, spacing: 4) {
+                                   Text(String(format: NSLocalizedString("about.copyright", comment: "Copyright notice"), settingsManager.author))
+                                   Text("about.license")
+                               }
+                               .font(.caption)
+                               .foregroundColor(.secondary)
+                               
+                               Spacer()
+                               
+                               // ИЗМЕНЕНИЕ: Добавляем кнопку проверки обновлений
+                               HStack {
+                                   Button(action: {
+                                       Task {
+                                           isCheckingForUpdates = true
+                                           await updateManager.checkForUpdates(silently: false)
+                                           isCheckingForUpdates = false
+                                       }
+                                   }) {
+                                       HStack {
+                                           if isCheckingForUpdates { ProgressView().controlSize(.small) }
+                                           Text("about.button.checkUpdates")
+                                       }
+                                   }
+                                   .disabled(isCheckingForUpdates)
+                                   
+                                   if let url = githubURL {
+                                       Button("GitHub") { openURL(url) }
+                                           .help("help.open.repository")
+                                   }
+                               }
+                               .buttonStyle(.bordered) // Общий стиль для кнопок
+                               .controlSize(.small)
+                           }
+                           .padding(.horizontal, 32).padding(.vertical, 16)
+                       }
+                       .background(Color(NSColor.windowBackgroundColor))
+                   }
+                   .frame(minWidth: 480, minHeight: 480)
+                   .background(Color(NSColor.windowBackgroundColor))
+               }
+           }
 
 // MARK: - Subviews
 
 private struct FeatureRow: View {
     let icon: String
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     
     var body: some View {
         HStack(spacing: 12) {

@@ -1,5 +1,5 @@
 // NetPulse/Core/Managers/NetworkManager.swift
-//  Copyright © 2025 ykreo. All rights reserved.
+// Copyright © 2025 ykreo. All rights reserved.
 
 import Foundation
 import SwiftUI
@@ -7,20 +7,23 @@ import UserNotifications
 import OSLog
 
 @MainActor
-class NetworkManager: ObservableObject {
+final class NetworkManager: ObservableObject {
     
-    // MARK: - Properties
+    // MARK: - Published Properties
+    
+    @Published private(set) var deviceStatuses: [UUID: DeviceStatus] = [:]
+    @Published private(set) var internetStatus = DeviceStatus()
+    @Published private(set) var isUpdating = false
+    @Published private(set) var commandStates: [UUID: Bool] = [:]
+    @Published private(set) var menuBarIconState: (name: String, color: Color) = ("circle.fill", .secondary)
+    
+    @Published private(set) var iconUpdateId = UUID()
+      
+    // MARK: - Private Properties
     
     private let settingsManager: SettingsManager
     private var updateTask: Task<Void, Error>?
-      
-    @Published var routerStatus = DeviceStatus()
-    @Published var pcStatus = DeviceStatus()
-    @Published var internetStatus = DeviceStatus()
-    @Published var isUpdating = false
-      
-    private var previousRouterStatus: DeviceStatus.State = .unknown
-    private var previousPcStatus: DeviceStatus.State = .unknown
+    private var previousDeviceStatuses: [UUID: DeviceStatus.State] = [:]
     private var previousInternetStatus: DeviceStatus.State = .unknown
     
     // MARK: - Initializer
@@ -29,116 +32,225 @@ class NetworkManager: ObservableObject {
         self.settingsManager = settingsManager
         Task {
             await self.requestNotificationPermission()
-            // Сразу запускаем управляемую задачу
+            self.initializeStatuses()
             self.setUpdateFrequency(isFast: false)
         }
     }
     
-    // MARK: - Timer Control
+    // MARK: - Public API
+    
+    func startFastUpdates() {
+        setUpdateFrequency(isFast: true)
+    }
+    
+    func stopFastUpdates() {
+        setUpdateFrequency(isFast: false)
+    }
        
     func setUpdateFrequency(isFast: Bool) {
-        // Отменяем предыдущую задачу, если она была
         updateTask?.cancel()
-        
-        // Создаем новую задачу
         updateTask = Task {
-            // Устанавливаем начальный интервал
-            var currentInterval = isFast ? 5.0 : self.settingsManager.settings.backgroundCheckInterval
-            let logMessage = isFast ? "Переход на быстрый режим обновления (5 сек)." : "Переход на фоновый режим обновления (\(currentInterval) сек)."
-            Logger.app.info("\(logMessage)")
+            let interval = isFast ? 5.0 : settingsManager.settings.backgroundCheckInterval
+            let mode = isFast ? "быстрый" : "фоновый"
+            Logger.network.info("Переход на \(mode) режим обновления (каждые \(String(format: "%.0f", interval)) сек).")
             
-            // Сразу выполняем первую проверку
-            await self.updateAllStatuses(isBackgroundCheck: !isFast)
+            await updateAllStatuses(isBackgroundCheck: !isFast)
             
-            // Бесконечный цикл, который будет прерван отменой задачи
             while !Task.isCancelled {
-                // Засыпаем на нужный интервал
-                try await Task.sleep(for: .seconds(currentInterval))
-                
-                // Проверяем, не изменился ли интервал в настройках
-                // Это делает систему более отзывчивой к изменениям настроек
-                let settingsInterval = self.settingsManager.settings.backgroundCheckInterval
-                if !isFast && currentInterval != settingsInterval {
-                    currentInterval = settingsInterval
-                    Logger.app.info("Интервал фонового обновления изменен на \(currentInterval) сек.")
+                try await Task.sleep(for: .seconds(interval))
+                let currentInterval = settingsManager.settings.backgroundCheckInterval
+                if !isFast && interval != currentInterval {
+                    setUpdateFrequency(isFast: false); break
                 }
-                
-                // Выполняем проверку
-                await self.updateAllStatuses(isBackgroundCheck: !isFast)
+                await updateAllStatuses(isBackgroundCheck: !isFast)
             }
         }
     }
     
-    // MARK: - Status Update Logic
-    
     func updateAllStatuses(isBackgroundCheck: Bool = false) async {
-            // Если уже идет обновление, выходим
-            guard !isUpdating else { return }
-
-            // Если все поля невалидны, сбрасываем статусы
-            guard self.settingsManager.areAllFieldsValid else {
-                (self.routerStatus, self.pcStatus, self.internetStatus) = (.init(), .init(), .init())
-                return
-            }
+        guard !isUpdating else { return }
+        guard settingsManager.areAllFieldsValid else {
+            initializeStatuses()
+            return
+        }
             
-            // Включаем индикатор загрузки
-            self.isUpdating = true
-            // Отложенное выключение индикатора в конце функции
-            defer { self.isUpdating = false }
+        isUpdating = true
+        defer { isUpdating = false }
             
-            Logger.app.info("Начинается обновление статусов (фоновое: \(isBackgroundCheck))...")
-            
-            // Асинхронно пингуем все цели
-            async let directInternetLatency = self.ping(host: self.settingsManager.settings.checkHost)
-            async let routerLatency = self.ping(host: self.settingsManager.settings.routerIP)
-            async let pcLatency = self.ping(host: self.settingsManager.settings.pcIP)
-
-            let (routerResult, pcResult, directInternetResult) = await (routerLatency, pcLatency, directInternetLatency)
-
-            // Обновляем статус Роутера
-            let newRouterStatus: DeviceStatus = routerResult != nil ? .init(state: .online, latency: routerResult) : .init(state: .offline)
-            self.routerStatus = newRouterStatus
-            
-            // Обновляем статус ПК
-            let newPcStatus: DeviceStatus = pcResult != nil ? .init(state: .online, latency: pcResult) : .init(state: .offline)
-            self.pcStatus = newPcStatus
-
-            // Переработанная логика статуса Интернета
-            let newInternetStatus: DeviceStatus
-            if let latency = directInternetResult {
-                newInternetStatus = .init(state: .online, latency: latency)
-            } else if self.routerStatus.state == .online {
-                if let latencyViaRouter = await self.checkInternetViaRouter() {
-                    newInternetStatus = .init(state: .online, latency: latencyViaRouter)
-                } else {
-                    newInternetStatus = .init(state: .offline)
+        await withTaskGroup(of: (UUID, DeviceStatus).self) { group in
+            for device in settingsManager.settings.devices {
+                group.addTask {
+                    let latency = await self.ping(host: device.host)
+                    let status: DeviceStatus = latency != nil ? .init(state: .online, latency: latency) : .init(state: .offline)
+                    return (device.id, status)
                 }
-            } else {
-                newInternetStatus = .init(state: .offline)
             }
-            self.internetStatus = newInternetStatus
+            
+            for await (id, status) in group {
+                deviceStatuses[id] = status
+                if isBackgroundCheck {
+                    checkAndNotify(
+                        device: settingsManager.settings.devices.first { $0.id == id },
+                        old: previousDeviceStatuses[id] ?? .unknown,
+                        new: status.state
+                    )
+                }
+                previousDeviceStatuses[id] = status.state
+            }
+        }
+        
+        let internetLatency = await ping(host: settingsManager.settings.checkHost)
+        let newInternetStatus: DeviceStatus = internetLatency != nil ? .init(state: .online, latency: internetLatency) : .init(state: .offline)
+        self.internetStatus = newInternetStatus
+        
+        if isBackgroundCheck {
+            checkAndNotify(device: nil, old: previousInternetStatus, new: newInternetStatus.state)
+        }
+        previousInternetStatus = newInternetStatus.state
+            
+        updateMenuBarIconState()
+    }
+    
+    func executeCommand(for device: Device, command: String?) {
+        guard let commandToExecute = command, !commandToExecute.isEmpty else { return }
 
-            // Только для фоновых проверок: сравниваем статусы и отправляем уведомления
-            if isBackgroundCheck {
-                self.checkAndNotify(device: "Роутер", old: self.previousRouterStatus, new: self.routerStatus.state)
-                self.checkAndNotify(device: "Компьютер", old: self.previousPcStatus, new: self.pcStatus.state)
-                self.checkAndNotify(device: "Интернет", old: self.previousInternetStatus, new: self.internetStatus.state)
+        var targetHost = device.host
+        var targetUser = device.user
+
+        if commandToExecute.contains("etherwake") {
+            if let router = settingsManager.settings.devices.first(where: { $0.icon == "wifi.router" }) {
+                targetHost = router.host
+                targetUser = router.user
+                Logger.network.info("Команда Wake-on-LAN. Цель изменена на роутер: \(targetUser)@\(targetHost)")
+            } else {
+                Logger.network.warning("Команда Wake-on-LAN, но роутер не найден в настройках. Используется хост устройства.")
             }
+        }
+        
+        Task {
+            commandStates[device.id] = true
+            defer { commandStates[device.id] = false }
             
-            // Обновляем "предыдущие" статусы для следующей проверки
-            self.previousRouterStatus = self.routerStatus.state
-            self.previousPcStatus = self.pcStatus.state
-            self.previousInternetStatus = self.internetStatus.state
+            do {
+                let output = try await ssh(user: targetUser, host: targetHost, command: commandToExecute)
+                let successMessage = output.isEmpty ? String(localized: "notification.command.success.body.empty") : output
+                sendNotification(title: "✅ \(device.name)", subtitle: successMessage, body: "")
+            } catch {
+                Logger.network.error("Ошибка выполнения команды для '\(device.name)': \(error.localizedDescription)")
+                // ИЗМЕНЕНИЕ: Добавлен недостающий аргумент 'subtitle'
+                sendNotification(title: "❌ \(device.name)", subtitle: "Ошибка выполнения команды", body: error.localizedDescription)
+            }
+        }
+    }
+    
+    func testSSHConnection(user: String, host: String) async -> (Bool, String) {
+        guard !user.isEmpty, !host.isEmpty else { return (false, String(localized: "ssh.error.empty_fields")) }
+        guard settingsManager.isSshKeyPathValid else { return (false, String(localized: "ssh.error.invalid_key_path")) }
+        
+        do {
+            let result = try await ssh(user: user, host: host, command: "echo 'SSH OK'")
+            let isSuccess = result.trimmingCharacters(in: .whitespacesAndNewlines) == "SSH OK"
+            let message = isSuccess ? String(localized: "ssh.success.message") : "\(String(localized: "ssh.error.unexpected_response")) \(result)"
+            return (isSuccess, message)
+        } catch {
+            return (false, "\(String(localized: "ssh.error.connection_failed")) \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func updateMenuBarIconState() {
+            // --- НАЧАЛО ДИАГНОСТИЧЕСКОГО БЛОКА ---
+            Logger.app.debug("--- Обновление иконки ---")
             
-            Logger.app.info("Обновление статусов завершено.")
+            let isValid = settingsManager.areAllFieldsValid
+            Logger.app.debug("Настройки валидны: \(isValid)")
+            
+            if !isValid {
+                menuBarIconState = ("exclamationmark.triangle.fill", .orange)
+                Logger.app.debug("Результат: Оранжевая иконка (невалидные настройки)")
+            } else {
+                let statuses = deviceStatuses.values
+                Logger.app.debug("Количество статусов: \(statuses.count)")
+                
+                if statuses.isEmpty || statuses.allSatisfy({ $0.state == .unknown }) {
+                    menuBarIconState = ("questionmark.circle.fill", .secondary)
+                    Logger.app.debug("Результат: Серая иконка (статусы неизвестны или отсутствуют)")
+                } else {
+                    let onlineCount = statuses.filter { $0.state == .online }.count
+                    let offlineCount = statuses.filter { $0.state == .offline }.count
+                    Logger.app.debug("Статусы: \(onlineCount) онлайн, \(offlineCount) офлайн")
+                    
+                    if onlineCount == statuses.count {
+                        menuBarIconState = ("circle.fill", .green)
+                        Logger.app.debug("Результат: Зеленая иконка (все онлайн)")
+                    } else if onlineCount > 0 {
+                        menuBarIconState = ("circle.fill", .orange)
+                        Logger.app.debug("Результат: Оранжевая иконка (частично онлайн)")
+                    } else {
+                        menuBarIconState = ("circle.fill", .red)
+                        Logger.app.debug("Результат: Красная иконка (все офлайн)")
+                    }
+                }
+            }
+            // --- КОНЕЦ ДИАГНОСТИЧЕСКОГО БЛОКА ---
+            
+            iconUpdateId = UUID()
         }
     
-    // MARK: - Core Network Operations
+    private func initializeStatuses() {
+        var freshStatuses: [UUID: DeviceStatus] = [:]
+        for device in settingsManager.settings.devices {
+            freshStatuses[device.id] = DeviceStatus(state: .unknown)
+        }
+        deviceStatuses = freshStatuses
+        internetStatus = DeviceStatus(state: .unknown)
+        previousDeviceStatuses.removeAll()
+        previousInternetStatus = .unknown
+        updateMenuBarIconState()
+    }
     
-    // ИСПРАВЛЕНО: Гарантированное выполнение в фоне, чтобы не замораживать UI
+    private func checkAndNotify(device: Device?, old: DeviceStatus.State, new: DeviceStatus.State) {
+        guard old != .unknown, new != .unknown, old != new else { return }
+        
+        let title: String
+        let subtitle: String
+        
+        if let device = device {
+            title = device.name
+            subtitle = new == .online ? "✅ \(String(localized: "status.online"))" : "❌ \(String(localized: "status.offline"))"
+        } else {
+            title = String(localized: "device.internet")
+            subtitle = new == .online ? "✅ \(String(localized: "status.online"))" : "❌ \(String(localized: "status.offline"))"
+        }
+
+        sendNotification(title: title, subtitle: subtitle, body: "")
+    }
+    
+    private func requestNotificationPermission() async {
+        let center = UNUserNotificationCenter.current()
+        let granted = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+        if granted == true {
+            Logger.app.info("Разрешение на уведомления получено.")
+        } else {
+            Logger.app.warning("Пользователь отклонил запрос на уведомления.")
+        }
+    }
+    
+    private func sendNotification(title: String, subtitle: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.subtitle = subtitle
+        content.body = body
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+    
+    // MARK: - Process Execution
+    
     private func runProcess(executableURL: URL, arguments: [String]) async -> (output: String, error: String, exitCode: Int32) {
-        return await withCheckedContinuation { continuation in
-            // Запускаем всю работу в фоновом потоке
+        await withCheckedContinuation { continuation in
             DispatchQueue.global().async {
                 let process = Process()
                 process.executableURL = executableURL
@@ -148,187 +260,54 @@ class NetworkManager: ObservableObject {
                 let errorPipe = Pipe()
                 process.standardOutput = outputPipe
                 process.standardError = errorPipe
-
+                
                 do {
                     try process.run()
-                    
                     let outputData = try outputPipe.fileHandleForReading.readToEnd() ?? Data()
                     let errorData = try errorPipe.fileHandleForReading.readToEnd() ?? Data()
-                    
                     process.waitUntilExit()
                     
                     let output = String(data: outputData, encoding: .utf8) ?? ""
                     let error = String(data: errorData, encoding: .utf8) ?? ""
-                    
                     continuation.resume(returning: (output, error, process.terminationStatus))
-                    
                 } catch {
                     continuation.resume(returning: ("", "Failed to run process: \(error)", 1))
                 }
             }
         }
     }
-
-    /// Пингует хост с помощью нативной утилиты `/sbin/ping`.
+    
     private func ping(host: String) async -> Double? {
         guard !host.isEmpty else { return nil }
+        let result = await runProcess(executableURL: URL(fileURLWithPath: "/sbin/ping"), arguments: ["-c", "1", "-W", "2000", host])
         
-        let result = await self.runProcess(
-            executableURL: URL(fileURLWithPath: "/sbin/ping"),
-            arguments: ["-c", "1", "-W", "2000", host] // 1 пакет, таймаут 2000 мс
-        )
-        
-        // Парсим вывод
-        if result.exitCode == 0,
-           let timeRange = result.output.range(of: "time="),
-           let msRange = result.output[timeRange.upperBound...].range(of: " ms") {
-            let latencyString = result.output[timeRange.upperBound..<msRange.lowerBound]
-            Logger.network.info("Ping to \(host) successful: \(latencyString)ms")
-            return Double(latencyString)
-        } else {
-            Logger.network.warning("Ping to \(host) failed. Error: \(result.error)")
+        guard result.exitCode == 0,
+              let timeRange = result.output.range(of: "time="),
+              let msRange = result.output[timeRange.upperBound...].range(of: " ms")
+        else {
             return nil
         }
+        
+        let latencyString = result.output[timeRange.upperBound..<msRange.lowerBound]
+        return Double(latencyString)
     }
 
-    /// Выполняет команду по SSH с помощью нативной утилиты `/usr/bin/ssh`.
     private func ssh(user: String, host: String, command: String) async throws -> String {
-        let keyPath = (self.settingsManager.settings.sshKeyPath as NSString).expandingTildeInPath
-        
-        // Эти опции КРИТИЧЕСКИ ВАЖНЫ. Без них ssh будет в интерактивном режиме
-        // запрашивать подтверждение ключа хоста и выполнение зависнет.
+        let keyPath = (settingsManager.settings.sshKeyPath as NSString).expandingTildeInPath
         let sshOptions = [
-            "-o", "StrictHostKeyChecking=no",    // Не проверять ключ хоста
-            "-o", "UserKnownHostsFile=/dev/null", // Не использовать и не сохранять ключи хостов
-            "-o", "ConnectTimeout=5"             // Таймаут на подключение 5 секунд
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            "-o", "ConnectTimeout=5"
         ]
+        let arguments = ["-i", keyPath] + sshOptions + ["\(user)@\(host)", command]
         
-        let result = await self.runProcess(
-            executableURL: URL(fileURLWithPath: "/usr/bin/ssh"),
-            arguments: ["-i", keyPath] + sshOptions + ["\(user)@\(host)", command]
-        )
+        let result = await runProcess(executableURL: URL(fileURLWithPath: "/usr/bin/ssh"), arguments: arguments)
         
         if result.exitCode == 0 {
-            Logger.network.info("SSH command '\(command)' to \(user)@\(host) successful.")
             return result.output
         } else {
-            Logger.network.error("SSH command '\(command)' to \(user)@\(host) failed. Error: \(result.error)")
-            throw NSError(domain: "SSH Error", code: Int(result.exitCode), userInfo: [NSLocalizedDescriptionKey: result.error])
+            let errorDescription = result.error.isEmpty ? "SSH command failed with exit code \(result.exitCode)." : result.error
+            throw NSError(domain: "SSH Error", code: Int(result.exitCode), userInfo: [NSLocalizedDescriptionKey: errorDescription])
         }
-    }
-
-    /// Проверяет интернет через роутер (пинг с самого роутера).
-    private func checkInternetViaRouter() async -> Double? {
-        let command = "ping -c 1 -W 2 \(self.settingsManager.settings.checkHost)"
-        do {
-            let output = try await self.ssh(
-                user: self.settingsManager.settings.sshUserRouter,
-                host: self.settingsManager.settings.routerIP,
-                command: command
-            )
-            // Парсим вывод пинга от роутера
-            if let timeRange = output.range(of: "time="),
-               let msRange = output[timeRange.upperBound...].range(of: " ms") {
-                let latencyString = output[timeRange.upperBound..<msRange.lowerBound]
-                return Double(latencyString)
-            }
-            return nil
-        } catch {
-            Logger.network.warning("Internet check via router failed: \(error.localizedDescription)")
-            return nil
-        }
-    }
-    
-    // MARK: - Actions (Действия из меню)
-    
-    func rebootRouter() {
-        self.executeAndNotify(title: "Роутер", successMessage: "Команда перезагрузки отправлена.") {
-            _ = try await self.ssh(user: self.settingsManager.settings.sshUserRouter, host: self.settingsManager.settings.routerIP, command: "sleep 2 && reboot")
-        }
-    }
-
-    func wolPC() {
-        self.executeAndNotify(title: "Компьютер (WOL)", successMessage: "WOL-пакет для ПК отправлен.") {
-            let command = "\(self.settingsManager.settings.wolCommand) \(self.settingsManager.settings.pcMAC)"
-            _ = try await self.ssh(user: self.settingsManager.settings.sshUserRouter, host: self.settingsManager.settings.routerIP, command: command)
-        }
-    }
-
-    func rebootPC() {
-        self.executeAndNotify(title: "Компьютер", successMessage: "Команда перезагрузки ПК отправлена.") {
-            _ = try await self.ssh(user: self.settingsManager.settings.sshUserPC, host: self.settingsManager.settings.pcIP, command: "sudo reboot")
-        }
-    }
-
-    func shutdownPC() {
-        self.executeAndNotify(title: "Компьютер", successMessage: "Команда выключения ПК отправлена.") {
-            _ = try await self.ssh(user: self.settingsManager.settings.sshUserPC, host: self.settingsManager.settings.pcIP, command: "sudo shutdown now")
-        }
-    }
-    
-    func testSSHConnection(user: String, host: String) async -> (Bool, String) {
-        guard !user.isEmpty, !host.isEmpty else {
-            return (false, "Поля 'IP-адрес' и 'Пользователь' не могут быть пустыми.")
-        }
-        guard self.settingsManager.isSshKeyPathValid else {
-            return (false, "Путь к SSH ключу недействителен или файл ключа некорректен.")
-        }
-        
-        do {
-            let result = try await self.ssh(user: user, host: host, command: "echo 'SSH OK'")
-            if result.trimmingCharacters(in: .whitespacesAndNewlines) == "SSH OK" {
-                return (true, "SSH-соединение успешно установлено!")
-            } else {
-                return (false, "Получен неожиданный ответ: \(result)")
-            }
-        } catch {
-            return (false, "Не удалось подключиться: \(error.localizedDescription)")
-        }
-    }
-    
-    // MARK: - Helpers
-    
-    private func checkAndNotify(device: String, old: DeviceStatus.State, new: DeviceStatus.State) {
-           // Уведомляем только если статус реально изменился и он не "неизвестен"
-           guard old != .unknown, new != .unknown, old != new else { return }
-           
-           let title = "\(device) изменил статус"
-           let body = new == .online ? "✅ Снова в сети" : "❌ Ушел в офлайн"
-           
-           Logger.app.info("Отправка уведомления: \(title) - \(body)")
-           self.sendNotification(title: title, body: body)
-    }
-
-    private func executeAndNotify(title: String, successMessage: String, task: @escaping () async throws -> Void) {
-        Task {
-            self.isUpdating = true // <- Включаем индикатор
-            defer { self.isUpdating = false } // <- Гарантированно выключаем в конце
-            do {
-                try await task()
-                self.sendNotification(title: title, body: successMessage)
-            } catch {
-                Logger.network.error("Ошибка выполнения действия '\(title)': \(error.localizedDescription)")
-                self.sendNotification(title: "Ошибка: \(title)", body: error.localizedDescription)
-            }
-        }
-    }
-    
-    private func requestNotificationPermission() async {
-        let center = UNUserNotificationCenter.current()
-        do {
-            // Запрашиваем разрешение на показ уведомлений
-            try await center.requestAuthorization(options: [.alert, .sound, .badge])
-        } catch {
-            Logger.app.warning("Не удалось получить разрешение на уведомления: \(error.localizedDescription)")
-        }
-    }
-    
-    private func sendNotification(title: String, body: String) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
     }
 }

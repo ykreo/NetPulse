@@ -1,247 +1,186 @@
-// NetPulse/Features/Menu/MenuView.swift
-//  Copyright © 2025 ykreo. All rights reserved.
 import SwiftUI
 
 struct MenuView: View {
-    @EnvironmentObject var manager: NetworkManager
-    @EnvironmentObject var settings: SettingsManager
+    @EnvironmentObject private var manager: NetworkManager
+    @EnvironmentObject private var settings: SettingsManager
     
-    // Для открытия окон
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    
-    // Для закрытия поповера
     @Environment(\.dismiss) private var dismiss
     
-    var body: some View {
-        VStack(spacing: 0) {
-            if settings.areAllFieldsValid {
-                // --- Основной интерфейс ---
-                VStack(spacing: 0) {
-                    // Заголовок
-                    HeaderView()
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        .padding(.bottom, 12)
-                    
-                    Divider()
-                        .padding(.horizontal, 12)
-                    
-                    // Статусы устройств
-                    VStack(spacing: 12) {
-                        StatusCard(
-                            title: "Роутер",
-                            status: manager.routerStatus,
-                            icon: "wifi.router"
-                        )
-                        
-                        StatusCard(
-                            title: "Компьютер",
-                            status: manager.pcStatus,
-                            icon: "desktopcomputer"
-                        )
-                        
-                        StatusCard(
-                            title: "Интернет",
-                            status: manager.internetStatus,
-                            icon: "globe"
-                        )
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
-                    
-                    // Действия
-                    if settings.isSshKeyPathValid {
-                        Divider()
-                            .padding(.horizontal, 12)
-                        
-                        ActionsView()
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
+    // ИЗМЕНЕНИЕ: Мы снова вычисляем идеальную высоту, но делаем это точнее.
+    private var idealHeight: CGFloat {
+        // Базовые высоты фиксированных элементов
+        let headerHeight: CGFloat = 60
+        let footerHeight: CGFloat = 50
+        
+        // Если не настроено, высота фиксирована
+        if !settings.settings.devices.isEmpty && settings.areAllFieldsValid {
+            // Высота карточки интернета
+            let internetCardHeight: CGFloat = 60
+            // Базовая высота карточки устройства
+            let baseDeviceCardHeight: CGFloat = 60
+            // Высота ряда с кнопками действий
+            let actionRowHeight: CGFloat = 45 // Примерная высота, может быть больше
+            // Отступы
+            let verticalPadding: CGFloat = 10 // Для списка, идеально выверенное значение
+            let spacing: CGFloat = 8 * CGFloat(settings.settings.devices.count + 1)
+
+            // Считаем высоту всех карточек устройств с их действиями
+            let devicesHeight = settings.settings.devices.reduce(0) { total, device in
+                // Фильтруем видимые действия, чтобы расчет был точным
+                let isOnline = manager.deviceStatuses[device.id]?.state == .online
+                let visibleActions = device.actions.filter {
+                    switch $0.displayCondition {
+                    case .always: return true
+                    case .ifOnline: return isOnline
+                    case .ifOffline: return !isOnline
                     }
                 }
+                
+                let actionHeight = !visibleActions.isEmpty ? actionRowHeight : 0
+                return total + baseDeviceCardHeight + actionHeight
+            }
+            
+            return headerHeight + footerHeight + internetCardHeight + devicesHeight + verticalPadding + spacing
+        } else {
+            return 300 // Фиксированная высота для заглушки
+        }
+    }
+    
+    // Максимальная высота - 80% от видимой части экрана
+    private var maxHeight: CGFloat {
+        (NSScreen.main?.visibleFrame.height ?? 800) * 0.8
+    }
+
+    var body: some View {
+        // Вся логика теперь в основном VStack
+        VStack(spacing: 0) {
+            if !settings.settings.devices.isEmpty && settings.areAllFieldsValid {
+                // Фиксированный хедер
+                HeaderView()
+                    .padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 12)
+                
+                Divider().padding(.horizontal, 12)
+
+                // Прокручиваемый контент
+                ScrollView {
+                    VStack(spacing: 8) {
+                        StatusCard(device: nil, status: manager.internetStatus, isLoading: manager.isUpdating)
+                        ForEach(settings.settings.devices) { device in
+                            StatusCard(
+                                device: device,
+                                status: manager.deviceStatuses[device.id] ?? DeviceStatus(state: .unknown),
+                                isLoading: manager.isUpdating || (manager.commandStates[device.id] ?? false)
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 16)
+                }
             } else {
-                // --- Состояние без настроек ---
+                // Заглушка, если не настроено
                 UnconfiguredView {
                     openSettings()
                     dismiss()
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 24)
+                .padding(.horizontal, 20).padding(.vertical, 24)
+                Spacer() // Центрируем заглушку
             }
             
-            // --- Футер ---
-            Divider()
-                .padding(.horizontal, 12)
-            
+            // Фиксированный футер
+            Divider().padding(.horizontal, 12)
             FooterView(
-                onAbout: {
-                    openWindow(id: "about")
-                    dismiss()
-                },
-                onSettings: {
-                    openSettings()
-                    dismiss()
-                }
+                onAbout: { openWindow(id: "about"); dismiss() },
+                onSettings: { openSettings(); dismiss() }
             )
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 16).padding(.vertical, 12)
         }
-        .frame(width: 320)
-        .background(Color(NSColor.windowBackgroundColor))
-        .onAppear { manager.setUpdateFrequency(isFast: true) }
-        .onDisappear { manager.setUpdateFrequency(isFast: false) }
+        // ИЗМЕНЕНИЕ: Применяем вычисленную высоту
+        .frame(width: 340, height: min(idealHeight, maxHeight))
+        .onAppear { manager.startFastUpdates() }
+        .onDisappear { manager.stopFastUpdates() }
     }
 }
 
-// MARK: - Subviews
+// MARK: - UI Components
+// Остальные компоненты остаются без изменений
 
 private struct HeaderView: View {
     @EnvironmentObject var manager: NetworkManager
     @EnvironmentObject var settings: SettingsManager
-    
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("NetPulse")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                
+                Text("NetPulse").font(.title2).fontWeight(.semibold)
                 HStack(spacing: 4) {
-                    Text("by")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(settings.author)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Text("• v\(settings.appVersion)")
-                        .font(.caption)
-                        .foregroundColor(.secondary.opacity(0.7))
+                    Text("menu.author.by").font(.caption).foregroundColor(.secondary)
+                    Text(settings.author).font(.caption).fontWeight(.medium).foregroundColor(.secondary)
+                    Text("• v\(settings.appVersion)").font(.caption).foregroundColor(.secondary.opacity(0.7))
                 }
             }
-            
             Spacer()
-            
-            Button(action: {
-                Task { await manager.updateAllStatuses() }
-            }) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-            .disabled(manager.isUpdating)
-            .opacity(manager.isUpdating ? 0.5 : 1.0)
+            Button(action: { Task { await manager.updateAllStatuses() } }) {
+                Image(systemName: "arrow.clockwise").font(.title3).foregroundColor(.secondary).frame(width: 24, height: 24)
+            }.buttonStyle(.plain).disabled(manager.isUpdating).opacity(manager.isUpdating ? 0.5 : 1.0)
         }
     }
 }
 
 private struct StatusCard: View {
-    let title: String
+    @EnvironmentObject var manager: NetworkManager
+    let device: Device?
     let status: DeviceStatus
-    let icon: String
+    let isLoading: Bool
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Иконка устройства
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.secondary)
-                .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(Color.secondary.opacity(0.1))
-                )
-            
-            // Информация об устройстве
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                HStack(spacing: 6) {
-                    // Индикатор статуса
-                    Circle()
-                        .fill(status.displayColor)
-                        .frame(width: 8, height: 8)
-                    
-                    Text(status.state.displayName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: device?.icon ?? "globe").font(.title2).foregroundColor(.secondary).frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(device?.name ?? String(localized: "device.internet")).font(.body).fontWeight(.medium)
+                    HStack(spacing: 6) {
+                        Circle().fill(status.displayColor).frame(width: 8, height: 8)
+                        Text(status.state.displayName).font(.caption).foregroundColor(.secondary)
+                    }
+                }
+                Spacer()
+                if isLoading {
+                    ProgressView().controlSize(.small)
+                } else if let latency = status.latency, status.state == .online {
+                    Text("\(Int(latency)) ms").font(.caption).fontWeight(.medium).foregroundColor(.secondary)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.secondary.opacity(0.1)))
                 }
             }
             
-            Spacer()
-            
-            // Задержка
-            if let latency = status.latency, status.state == .online {
-                Text("\(Int(latency)) ms")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.secondary.opacity(0.1))
-                    )
+            if let device = device, !device.actions.isEmpty {
+                actionButtons(for: device)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(NSColor.controlBackgroundColor))
-        )
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(NSColor.controlBackgroundColor)))
     }
-}
-
-private struct ActionsView: View {
-    @EnvironmentObject var manager: NetworkManager
-    @EnvironmentObject var settings: SettingsManager
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Действия")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-                .padding(.leading, 4)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
-                ActionButton(
-                    title: "Включить ПК",
-                    icon: "power",
-                    action: manager.wolPC,
-                    isEnabled: manager.pcStatus.state != .online && manager.routerStatus.state == .online
-                )
-                
-                ActionButton(
-                    title: "Перезагрузить ПК",
-                    icon: "restart",
-                    action: manager.rebootPC,
-                    isEnabled: manager.pcStatus.state == .online
-                )
-                
-                ActionButton(
-                    title: "Выключить ПК",
-                    icon: "power.dotted",
-                    action: manager.shutdownPC,
-                    isEnabled: manager.pcStatus.state == .online
-                )
-                
-                ActionButton(
-                    title: "Перезагрузить Роутер",
-                    icon: "wifi.router",
-                    action: manager.rebootRouter,
-                    isEnabled: manager.routerStatus.state == .online
-                )
+    @ViewBuilder private func actionButtons(for device: Device) -> some View {
+        let isOnline = status.state == .online
+        let commandInProgress = manager.commandStates[device.id] ?? false
+        
+        let visibleActions = device.actions.filter { action in
+            switch action.displayCondition {
+            case .always: return true
+            case .ifOnline: return isOnline
+            case .ifOffline: return !isOnline
+            }
+        }
+        
+        if !visibleActions.isEmpty {
+            Divider()
+            // Эту часть можно будет улучшить для адаптивности, как мы обсуждали
+            HStack(spacing: 8) {
+                ForEach(visibleActions) { action in
+                    ActionButton(action: action, device: device)
+                        .disabled(commandInProgress)
+                }
             }
         }
     }
@@ -249,135 +188,65 @@ private struct ActionsView: View {
 
 private struct ActionButton: View {
     @EnvironmentObject var manager: NetworkManager
-    let title: String
-    let icon: String
-    let action: () -> Void
-    let isEnabled: Bool
-
+    let action: CustomAction
+    let device: Device
+    
     var body: some View {
-        Button(action: action) {
-            // Используем ZStack, чтобы наложить ProgressView поверх контента
-            ZStack {
-                // Контент кнопки (иконка и текст)
-                VStack(spacing: 6) {
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
-
-                    Text(title)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                }
-                .foregroundColor(isEnabled ? .primary : .secondary)
-                .opacity(manager.isUpdating ? 0 : 1) // Скрываем, когда идет загрузка
-
-                // Индикатор загрузки
-                if manager.isUpdating {
-                    ProgressView()
-                        .controlSize(.small)
-                }
+        Button(action: {
+            manager.executeCommand(for: device, command: action.command)
+        }) {
+            HStack(spacing: 4) {
+                Image(systemName: action.icon)
+                Text(action.name)
             }
+            .font(.caption)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isEnabled ? Color.accentColor.opacity(0.1) : Color.secondary.opacity(0.05))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isEnabled ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
-            )
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.accentColor.opacity(0.15)))
         }
         .buttonStyle(.plain)
-        .disabled(!isEnabled || manager.isUpdating)
     }
 }
 
 private struct FooterView: View {
     let onAbout: () -> Void
     let onSettings: () -> Void
-    
     var body: some View {
         HStack(spacing: 12) {
-            // Кнопка "О программе"
-            Button(action: onAbout) {
-                Image(systemName: "info.circle")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-            .help("О программе")
-            
+            Button(action: onAbout) { Image(systemName: "info.circle") }
+                .buttonStyle(.plain)
+                .help("menu.footer.about.tooltip")
             Spacer()
-            
-            // Симметричные кнопки одинакового размера
             HStack(spacing: 8) {
-                Button("Выход") {
-                    NSApplication.shared.terminate(nil)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
-                .frame(minWidth: 80)
-                
+                Button("menu.footer.quit") { NSApplication.shared.terminate(nil) }
                 Button(action: onSettings) {
                     HStack(spacing: 4) {
                         Image(systemName: "gearshape.fill")
-                            .font(.caption)
-                        Text("Настройки")
-                            .font(.caption)
-                            .fontWeight(.medium)
+                        Text("menu.footer.settings")
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
-                .frame(minWidth: 80)
-            }
+            }.controlSize(.regular)
         }
     }
 }
 
-// MARK: - Unconfigured State View
-
 private struct UnconfiguredView: View {
     let onSettings: () -> Void
-    
     var body: some View {
         VStack(spacing: 20) {
-            VStack(spacing: 12) {
-                Image(systemName: "gear.badge.questionmark")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                    .frame(height: 60)
-                
-                Text("Требуется настройка")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                
-                Text("Пожалуйста, укажите IP-адреса устройств и настройте SSH-ключи для начала мониторинга сети.")
-                    .font(.body)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                    .lineLimit(nil)
-            }
-            
+            Image(systemName: "gear.badge.questionmark").font(.system(size: 48)).foregroundColor(.secondary)
+            Text("menu.unconfigured.title").font(.headline).fontWeight(.semibold)
+            Text("menu.unconfigured.description").multilineTextAlignment(.center).foregroundColor(.secondary)
             Button(action: onSettings) {
                 HStack(spacing: 8) {
                     Image(systemName: "gearshape.fill")
-                        .font(.body)
-                    Text("Открыть настройки")
-                        .font(.body)
-                        .fontWeight(.medium)
+                    Text("menu.unconfigured.button")
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            }.buttonStyle(.borderedProminent).controlSize(.large)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 20)
     }
 }
