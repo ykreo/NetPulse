@@ -39,21 +39,21 @@ struct NetPulseApp: App {
     
     @StateObject private var settingsManager: SettingsManager
     @StateObject private var networkManager: NetworkManager
-    @StateObject private var updateManager: UpdateManager
+    @StateObject private var sparkleUpdater: SparkleUpdaterController
     
     init() {
         let settings = SettingsManager()
         let network = NetworkManager(settingsManager: settings)
-        let updater = UpdateManager()
+        let updater = SparkleUpdaterController()
 
         _settingsManager = StateObject(wrappedValue: settings)
         _networkManager = StateObject(wrappedValue: network)
-        _updateManager = StateObject(wrappedValue: updater)
+        _sparkleUpdater = StateObject(wrappedValue: updater)
         
         appDelegate.setup(
             settingsManager: settings,
             networkManager: network,
-            updateManager: updater
+            updater: updater
         )
     }
 
@@ -72,13 +72,13 @@ struct NetPulseApp: App {
             SettingsView()
                 .environmentObject(networkManager)
                 .environmentObject(settingsManager)
-                .environmentObject(updateManager)
+                .environmentObject(sparkleUpdater)
         }
         
         Window("window.title.about", id: "about") {
             AboutView()
                 .environmentObject(settingsManager)
-                .environmentObject(updateManager)
+                .environmentObject(sparkleUpdater)
         }
         .windowResizability(.contentSize)
         .windowStyle(.hiddenTitleBar)

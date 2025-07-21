@@ -4,7 +4,7 @@ import SwiftUI
 
 struct AboutView: View {
     @EnvironmentObject var settingsManager: SettingsManager
-    @EnvironmentObject var updateManager: UpdateManager
+    @EnvironmentObject var sparkleUpdater: SparkleUpdaterController
     @Environment(\.openURL) private var openURL
     @State private var isCheckingForUpdates = false
     
@@ -19,7 +19,6 @@ struct AboutView: View {
                 Image(nsImage: NSApp.applicationIconImage)
                     .resizable()
                     .frame(width: 96, height: 96)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                 
                 // Название и версия
@@ -81,11 +80,7 @@ struct AboutView: View {
                                // ИЗМЕНЕНИЕ: Добавляем кнопку проверки обновлений
                                HStack {
                                    Button(action: {
-                                       Task {
-                                           isCheckingForUpdates = true
-                                           await updateManager.checkForUpdates(silently: false)
-                                           isCheckingForUpdates = false
-                                       }
+                                       sparkleUpdater.checkForUpdates()
                                    }) {
                                        HStack {
                                            if isCheckingForUpdates { ProgressView().controlSize(.small) }

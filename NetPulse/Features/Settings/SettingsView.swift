@@ -8,7 +8,7 @@ import OSLog
 struct SettingsView: View {
     @EnvironmentObject private var networkManager: NetworkManager
     @EnvironmentObject private var settingsManager: SettingsManager
-    @EnvironmentObject private var updateManager: UpdateManager
+    @EnvironmentObject private var sparkleUpdater: SparkleUpdaterController
     @Environment(\.dismiss) private var dismiss
     
     @State private var localSettings: AppSettings
@@ -110,9 +110,19 @@ struct SettingsView: View {
     }
     
     private func saveChanges(andRestart restart: Bool = false) {
-        if localSettings.launchAtLogin != settingsManager.settings.launchAtLogin {
-            handleLaunchAtLoginChange(to: localSettings.launchAtLogin)
-        }
+        // Получаем доступ к нашему контроллеру
+           let sparkleUpdater = (NSApp.delegate as? AppDelegate)?.updater
+           
+           // --- НАЧАЛО НОВОГО КОДА ---
+           
+           // Передаем в Sparkle новое значение галочки
+           sparkleUpdater?.toggleAutomaticChecks(enabled: localSettings.checkForUpdatesAutomatically)
+
+           // --- КОНЕЦ НОВОГО КОДА ---
+           
+           if localSettings.launchAtLogin != settingsManager.settings.launchAtLogin {
+               handleLaunchAtLoginChange(to: localSettings.launchAtLogin)
+           }
         settingsManager.applyAndSave(localSettings)
         (NSApp.delegate as? AppDelegate)?.updateActivationPolicy()
         networkManager.setUpdateFrequency(isFast: false)
@@ -225,7 +235,7 @@ private struct DeviceRowView: View {
 // MARK: - Вкладка "Общие"
 private struct GeneralSettingsTab: View {
     @EnvironmentObject var settingsManager: SettingsManager
-    @EnvironmentObject var updateManager: UpdateManager
+    @EnvironmentObject var sparkleUpdater: SparkleUpdaterController
     @FocusState private var focusedField: String?
     @Binding var localSettings: AppSettings
     
@@ -259,12 +269,9 @@ private struct GeneralSettingsTab: View {
                         
                         SettingsRow(title: "settings.row.manualCheck.title", description: "settings.row.manualCheck.description") {
                             Button(action: {
-                                Task {
-                                    isCheckingForUpdates = true
-                                    await updateManager.checkForUpdates(silently: false)
-                                    isCheckingForUpdates = false
-                                }
+                                sparkleUpdater.checkForUpdates()
                             }) {
+        
                                 HStack {
                                     if isCheckingForUpdates { ProgressView().controlSize(.small) }
                                     Text("settings.button.checkNow")

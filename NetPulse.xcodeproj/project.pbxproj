@@ -6,13 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FFF7E3EB2E2ED51F00C43678 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = FFF7E3EA2E2ED51F00C43678 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		FF1707A62E1B84C60059A7CA /* NetPulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetPulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FFF7E3ED2E2ED57000C43678 /* Exceptions for "NetPulse" folder in "NetPulse" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FF1707A52E1B84C60059A7CA /* NetPulse */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FF1707A82E1B84C60059A7CA /* NetPulse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FFF7E3ED2E2ED57000C43678 /* Exceptions for "NetPulse" folder in "NetPulse" target */,
+			);
 			path = NetPulse;
 			sourceTree = "<group>";
 		};
@@ -23,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FFF7E3EB2E2ED51F00C43678 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +83,7 @@
 			);
 			name = NetPulse;
 			packageProductDependencies = (
+				FFF7E3EA2E2ED51F00C43678 /* Sparkle */,
 			);
 			productName = NetPulse;
 			productReference = FF1707A62E1B84C60059A7CA /* NetPulse.app */;
@@ -94,6 +113,9 @@
 			);
 			mainGroup = FF17079D2E1B84C60059A7CA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FFF7E3E92E2ED51F00C43678 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FF1707A72E1B84C60059A7CA /* Products */;
 			projectDirPath = "";
@@ -257,6 +279,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NetPulse/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NetPulse;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 ykreo. All rights reserved.\n\n";
@@ -286,6 +309,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NetPulse/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = NetPulse;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 ykreo. All rights reserved.\n\n";
@@ -325,6 +349,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FFF7E3E92E2ED51F00C43678 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FFF7E3EA2E2ED51F00C43678 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FFF7E3E92E2ED51F00C43678 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FF17079E2E1B84C60059A7CA /* Project object */;
 }

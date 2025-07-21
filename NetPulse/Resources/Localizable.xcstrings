@@ -222,6 +222,7 @@
       }
     },
     "alert.no_update.message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -238,6 +239,7 @@
       }
     },
     "alert.no_update.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -319,6 +321,7 @@
     },
     "alert.update_error.message" : {
       "comment" : "Update error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -335,6 +338,7 @@
       }
     },
     "alert.update_error.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -351,6 +355,7 @@
       }
     },
     "alert.update.button.download" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -367,6 +372,7 @@
       }
     },
     "alert.update.button.later" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -384,6 +390,7 @@
     },
     "alert.update.message" : {
       "comment" : "Update message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -400,6 +407,7 @@
       }
     },
     "alert.update.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
