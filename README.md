@@ -3,8 +3,10 @@
 **NetPulse** — это простая и мощная утилита для строки меню macOS, созданная для мониторинга и управления сетевыми устройствами. Следите за доступностью вашего роутера, серверов и компьютеров и выполняйте любые команды по SSH одним кликом.
 
 <p align="center">
-  <img width="386" height="460" alt="image" src="https://github.com/user-attachments/assets/6aacd336-9c3c-41a4-9d25-e38313c8f869" />
-  <img width="1012" height="869" alt="image" src="https://github.com/user-attachments/assets/989af11f-c974-4c6b-bbc3-5651616aef59" />
+
+<img width="386" height="460" alt="image" src="https://github.com/user-attachments/assets/6aacd336-9c3c-41a4-9d25-e38313c8f869" />
+<img width="665" height="481" alt="image" src="https://github.com/user-attachments/assets/5f13a0da-01c5-4dd6-9f93-598f5eaee893" />
+<img width="1012" height="869" alt="image" src="https://github.com/user-attachments/assets/989af11f-c974-4c6b-bbc3-5651616aef59" />
 
 </p>
 
