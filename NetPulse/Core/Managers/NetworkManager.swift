@@ -8,6 +8,26 @@ import OSLog
 
 @MainActor
 final class NetworkManager: ObservableObject {
+
+    enum NetworkError: LocalizedError {
+        case invalidHost
+        case timeout
+        case cancelled
+        case processFailed(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidHost:
+                return String(localized: "network.error.invalid_host")
+            case .timeout:
+                return String(localized: "network.error.timeout")
+            case .cancelled:
+                return String(localized: "network.error.cancelled")
+            case .processFailed(let message):
+                return message
+            }
+        }
+    }
     
     // MARK: - Published Properties
     
@@ -80,12 +100,16 @@ final class NetworkManager: ObservableObject {
         await withTaskGroup(of: (UUID, DeviceStatus).self) { group in
             for device in settingsManager.settings.devices {
                 group.addTask {
-                    let latency = await self.ping(host: device.host)
-                    let status: DeviceStatus = latency != nil ? .init(state: .online, latency: latency) : .init(state: .offline)
-                    return (device.id, status)
+                    do {
+                        let latency = try await self.ping(host: device.host)
+                        return (device.id, DeviceStatus(state: .online, latency: latency))
+                    } catch {
+                        Logger.network.error("Ping error for \(device.name): \(error.localizedDescription)")
+                        return (device.id, DeviceStatus(state: .offline))
+                    }
                 }
             }
-            
+
             for await (id, status) in group {
                 deviceStatuses[id] = status
                 if isBackgroundCheck {
@@ -98,9 +122,15 @@ final class NetworkManager: ObservableObject {
                 previousDeviceStatuses[id] = status.state
             }
         }
-        
-        let internetLatency = await ping(host: settingsManager.settings.checkHost)
-        let newInternetStatus: DeviceStatus = internetLatency != nil ? .init(state: .online, latency: internetLatency) : .init(state: .offline)
+
+        let newInternetStatus: DeviceStatus
+        do {
+            let latency = try await ping(host: settingsManager.settings.checkHost)
+            newInternetStatus = .init(state: .online, latency: latency)
+        } catch {
+            Logger.network.error("Internet check failed: \(error.localizedDescription)")
+            newInternetStatus = .init(state: .offline)
+        }
         self.internetStatus = newInternetStatus
         
         if isBackgroundCheck {
@@ -135,9 +165,11 @@ final class NetworkManager: ObservableObject {
                 let output = try await ssh(user: targetUser, host: targetHost, command: commandToExecute)
                 let successMessage = output.isEmpty ? String(localized: "notification.command.success.body.empty") : output
                 sendNotification(title: "✅ \(device.name)", subtitle: successMessage, body: "")
+            } catch NetworkError.cancelled {
+                Logger.network.error("Команда отменена для '\(device.name)'")
+                sendNotification(title: "⚠️ \(device.name)", subtitle: String(localized: "command.cancelled"), body: "")
             } catch {
                 Logger.network.error("Ошибка выполнения команды для '\(device.name)': \(error.localizedDescription)")
-                // ИЗМЕНЕНИЕ: Добавлен недостающий аргумент 'subtitle'
                 sendNotification(title: "❌ \(device.name)", subtitle: "Ошибка выполнения команды", body: error.localizedDescription)
             }
         }
@@ -248,66 +280,99 @@ final class NetworkManager: ObservableObject {
     }
     
     // MARK: - Process Execution
-    
-    private func runProcess(executableURL: URL, arguments: [String]) async -> (output: String, error: String, exitCode: Int32) {
-        await withCheckedContinuation { continuation in
-            DispatchQueue.global().async {
-                let process = Process()
-                process.executableURL = executableURL
-                process.arguments = arguments
-                
-                let outputPipe = Pipe()
-                let errorPipe = Pipe()
-                process.standardOutput = outputPipe
-                process.standardError = errorPipe
-                
-                do {
-                    try process.run()
-                    let outputData = try outputPipe.fileHandleForReading.readToEnd() ?? Data()
-                    let errorData = try errorPipe.fileHandleForReading.readToEnd() ?? Data()
-                    process.waitUntilExit()
-                    
-                    let output = String(data: outputData, encoding: .utf8) ?? ""
-                    let error = String(data: errorData, encoding: .utf8) ?? ""
+
+    private func runProcess(executableURL: URL, arguments: [String], timeout: TimeInterval) async throws -> (output: String, error: String, exitCode: Int32) {
+        try Task.checkCancellation()
+        return try await withCheckedThrowingContinuation { continuation in
+            let process = Process()
+            process.executableURL = executableURL
+            process.arguments = arguments
+
+            let outputPipe = Pipe()
+            let errorPipe = Pipe()
+            process.standardOutput = outputPipe
+            process.standardError = errorPipe
+
+            do {
+                try process.run()
+            } catch {
+                continuation.resume(throwing: error)
+                return
+            }
+
+            let timeoutTask = Task {
+                try? await Task.sleep(for: .seconds(timeout))
+                if process.isRunning { process.terminate() }
+            }
+
+            let cancelTask = Task {
+                while process.isRunning {
+                    try await Task.sleep(for: .milliseconds(100))
+                    if Task.isCancelled {
+                        process.terminate()
+                        return
+                    }
+                }
+            }
+
+            process.terminationHandler = { _ in
+                timeoutTask.cancel()
+                cancelTask.cancel()
+                let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(data: outputData, encoding: .utf8) ?? ""
+                let error = String(data: errorData, encoding: .utf8) ?? ""
+                if Task.isCancelled {
+                    continuation.resume(throwing: CancellationError())
+                } else {
                     continuation.resume(returning: (output, error, process.terminationStatus))
-                } catch {
-                    continuation.resume(returning: ("", "Failed to run process: \(error)", 1))
                 }
             }
         }
     }
-    
-    private func ping(host: String) async -> Double? {
-        guard !host.isEmpty else { return nil }
-        let result = await runProcess(executableURL: URL(fileURLWithPath: "/sbin/ping"), arguments: ["-c", "1", "-W", "2000", host])
-        
+
+    func ping(host: String, timeout: TimeInterval = 2) async throws -> Double {
+        try Task.checkCancellation()
+        guard !host.isEmpty else { throw NetworkError.invalidHost }
+        let ms = Int(timeout * 1000)
+        let result = try await runProcess(executableURL: URL(fileURLWithPath: "/sbin/ping"), arguments: ["-c", "1", "-W", "\(ms)", host], timeout: timeout)
+
         guard result.exitCode == 0,
               let timeRange = result.output.range(of: "time="),
               let msRange = result.output[timeRange.upperBound...].range(of: " ms")
         else {
-            return nil
+            throw NetworkError.processFailed(result.error.isEmpty ? "Ping failed" : result.error)
         }
-        
+
+        try Task.checkCancellation()
         let latencyString = result.output[timeRange.upperBound..<msRange.lowerBound]
-        return Double(latencyString)
+        guard let latency = Double(latencyString) else {
+            throw NetworkError.processFailed("Invalid latency format")
+        }
+        return latency
     }
 
-    private func ssh(user: String, host: String, command: String) async throws -> String {
+    func ssh(user: String, host: String, command: String, timeout: TimeInterval = 5) async throws -> String {
+        try Task.checkCancellation()
         let keyPath = (settingsManager.settings.sshKeyPath as NSString).expandingTildeInPath
         let sshOptions = [
             "-o", "StrictHostKeyChecking=no",
             "-o", "UserKnownHostsFile=/dev/null",
-            "-o", "ConnectTimeout=5"
+            "-o", "ConnectTimeout=\(Int(timeout))"
         ]
         let arguments = ["-i", keyPath] + sshOptions + ["\(user)@\(host)", command]
-        
-        let result = await runProcess(executableURL: URL(fileURLWithPath: "/usr/bin/ssh"), arguments: arguments)
-        
-        if result.exitCode == 0 {
-            return result.output
-        } else {
-            let errorDescription = result.error.isEmpty ? "SSH command failed with exit code \(result.exitCode)." : result.error
-            throw NSError(domain: "SSH Error", code: Int(result.exitCode), userInfo: [NSLocalizedDescriptionKey: errorDescription])
+
+        do {
+            let result = try await runProcess(executableURL: URL(fileURLWithPath: "/usr/bin/ssh"), arguments: arguments, timeout: timeout)
+            try Task.checkCancellation()
+            if result.exitCode == 0 {
+                return result.output
+            } else {
+                let description = result.error.isEmpty ? "SSH command failed with exit code \(result.exitCode)." : result.error
+                throw NetworkError.processFailed(description)
+            }
+        } catch is CancellationError {
+            throw NetworkError.cancelled
         }
     }
 }
