@@ -142,19 +142,19 @@ final class SettingsManager: ObservableObject {
         self.isCheckHostValid = validateHost(settings.checkHost)
     }
 
-    private func validateIP(_ address: String) -> Bool {
+    func validateIP(_ address: String) -> Bool {
         let pattern = #"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"#
         return address.range(of: pattern, options: .regularExpression) != nil
     }
 
-    private func validateHost(_ host: String) -> Bool {
+    func validateHost(_ host: String) -> Bool {
         if validateIP(host) { return true }
         // Паттерн для доменных имен.
         let pattern = #"^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$"#
         return host.range(of: pattern, options: .regularExpression) != nil
     }
     
-    private func validateSSHKey(_ path: String) -> Bool {
+    func validateSSHKey(_ path: String) -> Bool {
         guard !path.isEmpty else { return false }
         let expandedPath = (path as NSString).expandingTildeInPath
         var isDirectory: ObjCBool = false
