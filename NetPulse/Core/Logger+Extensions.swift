@@ -6,7 +6,7 @@ import OSLog
 
 extension Logger {
     // Используем bundleIdentifier, чтобы лог был уникальным для нашего приложения.
-    private static let subsystem = Bundle.main.bundleIdentifier!
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "NetPulse"
 
     /// Логгер для общих событий жизненного цикла приложения.
     static let app = Logger(subsystem: subsystem, category: "Application")
